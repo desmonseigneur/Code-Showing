@@ -23,8 +23,7 @@ namespace ProjectCompiler
         public Form2(Form1 form1)
         {
             InitializeComponent();
-            form1Instance = form1;
-            DBViewer.CellDoubleClick += new DataGridViewCellEventHandler(DBViewer_CellDoubleClick);
+            form1Instance = form1;            
         }
         public Form2()
         {
@@ -273,29 +272,35 @@ namespace ProjectCompiler
         }
         private void DBViewer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0) // Check if a valid row is selected
+            try
             {
                 DataGridViewRow selectedRow = DBViewer.Rows[e.RowIndex];
 
-                form1Instance.Title = selectedRow.Cells["Project/Program/Activity"].Value.ToString();
-                form1Instance.Location = selectedRow.Cells["Location"].Value.ToString();
-                form1Instance.TotalCost = Convert.ToDecimal(selectedRow.Cells["Total Cost"].Value);
-                form1Instance.Budget = Convert.ToDecimal(selectedRow.Cells["Approved Budget in Contract (ABC)"].Value);
-                form1Instance.Notice = Convert.ToDateTime(selectedRow.Cells["Notice to Proceed"].Value);
-                form1Instance.Start = Convert.ToDateTime(selectedRow.Cells["Date Started"].Value);
-                form1Instance.Target = Convert.ToDateTime(selectedRow.Cells["Target Completion Date"].Value);
-                form1Instance.Calendar = selectedRow.Cells["No. of Calendar Days"].Value.ToString();
-                form1Instance.Extension = selectedRow.Cells["No. of Extension"].Value.ToString();
-                form1Instance.Status = Convert.ToInt32(selectedRow.Cells["Project Status (%)"].Value);
-                form1Instance.Incurred = Convert.ToDecimal(selectedRow.Cells["Total Cost Incurred to Date"].Value);
-                form1Instance.Inspect = Convert.ToDateTime(selectedRow.Cells["Inspection Date"].Value);
-                form1Instance.Remarks = selectedRow.Cells["Remarks"].Value.ToString();
-                form1Instance.Coordinator = selectedRow.Cells["Project Coordinator"].Value.ToString();
-                form1Instance.Source = selectedRow.Cells["Source of Fund"].Value.ToString();
-                form1Instance.Contractor = selectedRow.Cells["Contractor"].Value.ToString();
+                // Ensure that each cell has a valid value before conversion
+                form1Instance.Title = selectedRow.Cells["Project/Program/Activity"].Value?.ToString() ?? "N/A";
+                form1Instance.Location = selectedRow.Cells["Location"].Value?.ToString() ?? "N/A";
+                form1Instance.TotalCost = Convert.ToDecimal(selectedRow.Cells["Total Cost"].Value ?? 0);
+                form1Instance.Budget = Convert.ToDecimal(selectedRow.Cells["Approved Budget in Contract (ABC)"].Value ?? 0);
+                form1Instance.Notice = Convert.ToDateTime(selectedRow.Cells["Notice to Proceed"].Value ?? DateTime.Now);
+                form1Instance.Start = Convert.ToDateTime(selectedRow.Cells["Date Started"].Value ?? DateTime.Now);
+                form1Instance.Target = Convert.ToDateTime(selectedRow.Cells["Target Completion Date"].Value ?? DateTime.Now);
+                form1Instance.Calendar = selectedRow.Cells["No. of Calendar Days"].Value?.ToString() ?? "0";
+                form1Instance.Extension = selectedRow.Cells["No. of Extension"].Value?.ToString() ?? "0";
+                form1Instance.Status = Convert.ToInt32(selectedRow.Cells["Project Status (%)"].Value ?? 0);
+                form1Instance.Incurred = Convert.ToDecimal(selectedRow.Cells["Total Cost Incurred to Date"].Value ?? 0);
+                form1Instance.Inspect = Convert.ToDateTime(selectedRow.Cells["Inspection Date"].Value ?? DateTime.Now);
+                form1Instance.Remarks = selectedRow.Cells["Remarks"].Value?.ToString() ?? "N/A";
+                form1Instance.Coordinator = selectedRow.Cells["Project Coordinator"].Value?.ToString() ?? "N/A";
+                form1Instance.Source = selectedRow.Cells["Source of Fund"].Value?.ToString() ?? "N/A";
+                form1Instance.Contractor = selectedRow.Cells["Contractor"].Value?.ToString() ?? "N/A";
 
                 form1Instance.Show(); // Bring Form1 to the front
                 form1Instance.BringToFront();
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions and provide feedback
+                MessageBox.Show("Please click 'Show Full Table' first before transferring data");
             }
         }
     }
