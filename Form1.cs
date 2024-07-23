@@ -144,13 +144,25 @@ namespace ProjectCompiler
         }
         private void ProjectsList_Click(object sender, EventArgs e)
         {
-            if (form2Instance == null)
+            using (Form3 loginForm = new Form3())
             {
-                form2Instance = new Form2(this);
-                form2Instance.FormClosed += (s, args) => form2Instance = null;
+                // Show Form3 as a dialog to enforce login
+                if (loginForm.ShowDialog() == DialogResult.OK)
+                {
+                    if (form2Instance == null)
+                    {
+                        form2Instance = new Form2(this);
+                        form2Instance.FormClosed += (s, args) => form2Instance = null;
+                    }
+                    form2Instance.Show();
+                    form2Instance.BringToFront();
+                }
+                else
+                {
+                    // Handle login failure
+                    MessageBox.Show("Login failed. Please try again.");
+                }
             }
-            form2Instance.Show();
-            form2Instance.BringToFront();
         }
         private void StartDate_ValueChanged(object sender, EventArgs e)
         {
