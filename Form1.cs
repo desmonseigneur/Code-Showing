@@ -12,7 +12,7 @@ namespace ProjectCompiler
 {
     public partial class Form1 : Form
     {
-        public Form2 Form2Instance { get; set; }
+        private Form2 form2Instance;
         public Form1()
         {
             InitializeComponent();
@@ -20,7 +20,7 @@ namespace ProjectCompiler
             StartDate.Value = DateTime.Now;
             TargetDate.Value = DateTime.Now;
             InspectDate.Value = DateTime.Now;
-            Form2Instance = new Form2();
+            ProjectsList.Click += ProjectsList_Click;
         }
         private MySqlConnection GetConnection()
         {
@@ -144,8 +144,13 @@ namespace ProjectCompiler
         }
         private void ProjectsList_Click(object sender, EventArgs e)
         {
-            Form2 form2 = new Form2();
-            form2.Show();
+            if (form2Instance == null)
+            {
+                form2Instance = new Form2(this);
+                form2Instance.FormClosed += (s, args) => form2Instance = null;
+            }
+            form2Instance.Show();
+            form2Instance.BringToFront();
         }
         private void StartDate_ValueChanged(object sender, EventArgs e)
         {
