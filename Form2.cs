@@ -294,6 +294,7 @@ namespace ProjectCompiler
                 form1Instance.Source = selectedRow.Cells["Source of Fund"].Value.ToString();
                 form1Instance.Contractor = selectedRow.Cells["Contractor"].Value.ToString();
 
+                form1Instance.Show(); // Bring Form1 to the front
                 form1Instance.BringToFront();
             }
         }
