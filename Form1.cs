@@ -184,74 +184,85 @@ namespace ProjectCompiler
                 CalendarBox.Text = "Invalid Date Format";
             }
         }
-        public string Name
+        public string Title
         {
             get { return NameBox.Text; }
             set { NameBox.Text = value; }
         }
-
         public string Location
         {
             get { return LocationCB.Text; }
             set { LocationCB.Text = value; }
         }
-        public string TCost
-        {
-            get { return TCBox.Text; }
-            set { TCBox.Text = value; }
-        }
-        public string ApprovedBudget
-        {
-            get { return BudgetBox.Text; }
-            set { BudgetBox.Text = value; }
-        }
-        public string DateEnds { get; set; }
-        public string NoticeProceed { get; set; }
-        public string DateStarts { get; set; }
-        public string CalendarDays
-        {
-            get { return CalendarBox.Text; }
-            set { CalendarBox.Text = value; }
-        }
-        public string ExtDays
-        {
-            get { return ExtBox.Text; }
-            set { ExtBox.Text = value; }
-        }
-        public string ProjectStat
-        {
-            get { return StatusBox.Text; }
-            set { StatusBox.Text = value; }
-        }
-        public string TCIncurred
-        {
-            get { return IncurredBox.Text; }
-            set { IncurredBox.Text = value; }
-        }
-        public string DateInspects
-        {
-            get { return InspectDate.Text; }
-            set { InspectDate.Text = value; }
-        }
-        public string Comments
-        {
-            get { return RemarksBox.Text; }
-            set { RemarksBox.Text = value; }
-        }
-        public string ProjectCoord
+        public string Coordinator
         {
             get { return PCBox.Text; }
-            set { LocationCB.Text = value; }
+            set { PCBox.Text = value; }
         }
-        public string Fund
+        public string Contractor
+        {
+            get { return ConBox.Text; }
+            set { ConBox.Text = value; }
+        }
+        public string Source
         {
             get { return SourceBox.Text; }
             set { SourceBox.Text = value; }
         }
-        public string ProjectCont
+        public decimal TotalCost
         {
-            get { return ConBox.Text; }
-            set { ConBox.Text = value; }
+            get { return decimal.Parse(TCBox.Text); }
+            set { TCBox.Text = value.ToString(); }
+        }
+        public decimal Budget
+        {
+            get { return decimal.Parse(BudgetBox.Text); }
+            set { BudgetBox.Text = value.ToString(); }
+        }
+        public DateTime Notice
+        {
+            get { return NoticeDate.Value; }
+            set { NoticeDate.Value = value; }
+        }
+        public DateTime Start
+        {
+            get { return StartDate.Value; }
+            set { StartDate.Value = value; }
+        }
+        public DateTime Target
+        {
+            get { return TargetDate.Value; }
+            set { TargetDate.Value = value; }
+        }
+        public string Calendar
+        {
+            get { return CalendarBox.Text; }
+            set { CalendarBox.Text = value; }
+        }
+        public string Extension
+        {
+            get { return ExtBox.Text; }
+            set { ExtBox.Text = value; }
+        }
+        public int Status
+        {
+            get { return int.Parse(StatusBox.Text); }
+            set { StatusBox.Text = value.ToString(); }
+        }
+        public decimal Incurred
+        {
+            get { return decimal.Parse(IncurredBox.Text); }
+            set { IncurredBox.Text = value.ToString("0.000"); }
+        }
+        public DateTime Inspect
+        {
+            get { return InspectDate.Value; }
+            set { InspectDate.Value = value; }
+        }
+        public string Remarks
+        {
+            get { return RemarksBox.Text; }
+            set { RemarksBox.Text = value; }
         }
 
     }
