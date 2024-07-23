@@ -19,6 +19,13 @@ namespace ProjectCompiler
     {
         private string selectedColumnName = ""; // Store selected column name
         private string previousSearchText = ""; // Store previous search text
+        private Form1 form1Instance;
+        public Form2(Form1 form1)
+        {
+            InitializeComponent();
+            form1Instance = form1;
+            DBViewer.CellDoubleClick += new DataGridViewCellEventHandler(DBViewer_CellDoubleClick);
+        }
         public Form2()
         {
             InitializeComponent();
@@ -264,57 +271,30 @@ namespace ProjectCompiler
                 }
             }
         }
-
-        private Form1 form1Instance;
-
         private void DBViewer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0) // Check if a valid row is selected
             {
-                
-                DataTable data = (DataTable)DBViewer.DataSource;
+                DataGridViewRow selectedRow = DBViewer.Rows[e.RowIndex];
 
-                // Get data from the selected row using e.RowIndex
-                string ProjectTitle = data.Rows[e.RowIndex]["Project/Program/Activity"].ToString();
-                string Location = data.Rows[e.RowIndex]["Location"].ToString();
-                string TotalCost = data.Rows[e.RowIndex]["Total Cost"].ToString();
-                string ABC = data.Rows[e.RowIndex]["Approved Budget in Contract (ABC)"].ToString();
-                string NTP = data.Rows[e.RowIndex]["Notice to Proceed"].ToString();
-                string StartDate = data.Rows[e.RowIndex]["Date Started"].ToString();
-                string CalendarDays = data.Rows[e.RowIndex]["No. of Calendar Days"].ToString();
-                string Ext = data.Rows[e.RowIndex]["No. of Extension"].ToString();
-                string EndDate = data.Rows[e.RowIndex]["Target Completion Date"].ToString();
-                string ProjectStatus = data.Rows[e.RowIndex]["Project Status (%)"].ToString();
-                string TotalCostIncurred = data.Rows[e.RowIndex]["Total Cost Incurred to Date"].ToString();
-                string InspectDate = data.Rows[e.RowIndex]["Inspection Date"].ToString();
-                string Remarks = data.Rows[e.RowIndex]["Remarks"].ToString();
-                string ProjectCoordinator = data.Rows[e.RowIndex]["Project Coordinator"].ToString();
-                string SOF = data.Rows[e.RowIndex]["Source of Fund"].ToString();
-                string ProjectContractor = data.Rows[e.RowIndex]["Contractor"].ToString();
+                form1Instance.Title = selectedRow.Cells["Project/Program/Activity"].Value.ToString();
+                form1Instance.Location = selectedRow.Cells["Location"].Value.ToString();
+                form1Instance.TotalCost = Convert.ToDecimal(selectedRow.Cells["Total Cost"].Value);
+                form1Instance.Budget = Convert.ToDecimal(selectedRow.Cells["Approved Budget in Contract (ABC)"].Value);
+                form1Instance.Notice = Convert.ToDateTime(selectedRow.Cells["Notice to Proceed"].Value);
+                form1Instance.Start = Convert.ToDateTime(selectedRow.Cells["Date Started"].Value);
+                form1Instance.Target = Convert.ToDateTime(selectedRow.Cells["Target Completion Date"].Value);
+                form1Instance.Calendar = selectedRow.Cells["No. of Calendar Days"].Value.ToString();
+                form1Instance.Extension = selectedRow.Cells["No. of Extension"].Value.ToString();
+                form1Instance.Status = Convert.ToInt32(selectedRow.Cells["Project Status (%)"].Value);
+                form1Instance.Incurred = Convert.ToDecimal(selectedRow.Cells["Total Cost Incurred to Date"].Value);
+                form1Instance.Inspect = Convert.ToDateTime(selectedRow.Cells["Inspection Date"].Value);
+                form1Instance.Remarks = selectedRow.Cells["Remarks"].Value.ToString();
+                form1Instance.Coordinator = selectedRow.Cells["Project Coordinator"].Value.ToString();
+                form1Instance.Source = selectedRow.Cells["Source of Fund"].Value.ToString();
+                form1Instance.Contractor = selectedRow.Cells["Contractor"].Value.ToString();
 
-                if (form1Instance != null)
-                {
-                    form1Instance.Name = ProjectTitle;
-                    form1Instance.Location = Location;
-                    form1Instance.TCost = Location;
-                    form1Instance.ApprovedBudget = ABC;
-                    form1Instance.NoticeProceed = NTP;
-                    form1Instance.DateStarts = StartDate;
-                    form1Instance.DateEnds = EndDate;
-                    form1Instance.CalendarDays = CalendarDays;
-                    form1Instance.ExtDays = Ext;
-                    form1Instance.ProjectStat = ProjectStatus;
-                    form1Instance.TCIncurred = TotalCostIncurred;
-                    form1Instance.DateInspects = InspectDate;
-                    form1Instance.Comments = Remarks;
-                    form1Instance.ProjectCoord = ProjectCoordinator;
-                    form1Instance.Fund = SOF;
-                    form1Instance.ProjectCont = ProjectContractor;
-                }
-                else
-                {
-                    Console.WriteLine("Form1 reference not available to set data.");
-                }
+                form1Instance.Show(); // Bring Form1 to the front
             }
         }
     }
