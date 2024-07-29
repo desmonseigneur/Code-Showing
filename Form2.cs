@@ -32,6 +32,7 @@ namespace ProjectCompiler
         private void Form2_Load(object sender, EventArgs e)
         {
             PopulateDataGridView();
+            DBViewer.Columns["Id"].Visible = false;
         }
         private MySqlConnection GetConnection()
         {
@@ -58,7 +59,7 @@ namespace ProjectCompiler
             {
                 if (connection != null)
                 {
-                    string query = "SELECT project_title AS 'Project/Program/Activity', project_location AS 'Location', project_totalcost AS 'Total Cost', project_budget AS 'Approved Budget in Contract (ABC)', date_notice AS 'Notice to Proceed', date_start AS 'Date Started', date_target AS 'Target Completion Date', project_status AS 'Project Status (%)', project_incurred AS 'Total Cost Incurred to Date', date_inspection AS 'Inspection Date', project_coordinator AS 'Project Coordinator', project_source AS 'Source of Fund', project_contractor AS 'Contractor', project_encoder AS 'Encoder' FROM dmedb.project_tb"; // Modify if needed
+                    string query = "SELECT project_title AS 'Project/Program/Activity', project_location AS 'Location', project_totalcost AS 'Total Cost', project_budget AS 'Approved Budget in Contract (ABC)', date_notice AS 'Notice to Proceed', date_start AS 'Date Started', date_target AS 'Target Completion Date', project_status AS 'Project Status (%)', project_incurred AS 'Total Cost Incurred to Date', date_inspection AS 'Inspection Date', project_coordinator AS 'Project Coordinator', project_source AS 'Source of Fund', project_contractor AS 'Contractor', project_encoder AS 'Encoder', project_id AS 'Id' FROM dmedb.project_tb"; // Modify if needed
                     MySqlDataAdapter adapter = new MySqlDataAdapter(query, connection);
 
                     DataTable data = new DataTable();
@@ -86,7 +87,7 @@ namespace ProjectCompiler
             {
                 if (connection != null)
                 {
-                    string query = "SELECT project_year AS 'Project Year', project_title AS 'Project/Program/Activity', project_location AS 'Location', project_totalcost AS 'Total Cost', project_budget AS 'Approved Budget in Contract (ABC)', date_notice AS 'Notice to Proceed', date_start AS 'Date Started', date_days AS 'No. of Calendar Days', date_extension AS 'No. of Extension', date_target AS 'Target Completion Date', project_status AS 'Project Status (%)', project_incurred AS 'Total Cost Incurred to Date', project_photos AS 'Photos', date_inspection AS 'Inspection Date', project_remarks AS 'Remarks', project_coordinator AS 'Project Coordinator', project_source AS 'Source of Fund', project_contractor AS 'Contractor', project_encoder AS 'Encoder' FROM dmedb.project_tb"; // Modify if needed
+                    string query = "SELECT project_year AS 'Project Year', project_title AS 'Project/Program/Activity', project_location AS 'Location', project_totalcost AS 'Total Cost', project_budget AS 'Approved Budget in Contract (ABC)', date_notice AS 'Notice to Proceed', date_start AS 'Date Started', date_days AS 'No. of Calendar Days', date_extension AS 'No. of Extension', date_target AS 'Target Completion Date', project_status AS 'Project Status (%)', project_incurred AS 'Total Cost Incurred to Date', project_photos AS 'Photos', date_inspection AS 'Inspection Date', project_remarks AS 'Remarks', project_coordinator AS 'Project Coordinator', project_source AS 'Source of Fund', project_contractor AS 'Contractor', project_encoder AS 'Encoder', project_id AS 'Id' FROM dmedb.project_tb"; // Modify if needed
                     MySqlDataAdapter adapter = new MySqlDataAdapter(query, connection);
 
                     DataTable populatedData = new DataTable(); // Rename data to populatedData or dataTable
@@ -211,7 +212,7 @@ namespace ProjectCompiler
 
                 form1Instance.Show(); // Bring Form1 to the front
                 form1Instance.BringToFront();
-                form1Instance.SetEditButtonVisibility(true);
+                form1Instance.SetButtonsVisibility(true);
             }
             catch (Exception ex)
             {
