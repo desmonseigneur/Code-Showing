@@ -329,7 +329,7 @@ namespace ProjectCompiler
                 string query = "UPDATE project_tb SET project_title = @title, project_location = @loc, project_totalcost = @tc, project_budget = @budget, date_notice = @notice, date_start = @start, date_days = @days, date_extension = @ext, date_target = @target, project_status = @status, project_incurred = @incurred, date_inspection = @inspect, project_remarks = @remarks, project_coordinator = @pc, project_source = @source, project_contractor = @con, project_encoder = @enc WHERE project_id = @id";
                 MySqlCommand command = new MySqlCommand(query, con);
 
-                command.Parameters.AddWithValue("@id", project.Id); // Use the Id to identify the row
+                command.Parameters.AddWithValue("@id", project.Id);
                 command.Parameters.AddWithValue("@title", project.Title);
                 command.Parameters.AddWithValue("@loc", project.Location);
                 command.Parameters.AddWithValue("@tc", project.TotalCost);
@@ -350,8 +350,8 @@ namespace ProjectCompiler
 
                 try
                 {
-                    await command.ExecuteNonQueryAsync();
-                    MessageBox.Show("Project updated successfully!");
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    MessageBox.Show($"{rowsAffected} row(s) updated successfully!");
                 }
                 catch (Exception ex)
                 {
