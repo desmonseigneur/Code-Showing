@@ -211,7 +211,7 @@ namespace ProjectCompiler
 
                 form1Instance.Show(); // Bring Form1 to the front
                 form1Instance.BringToFront();
-                form1Instance.Edit.Visible = true;
+                form1Instance.SetEditButtonVisibility(true);
             }
             catch (Exception ex)
             {
