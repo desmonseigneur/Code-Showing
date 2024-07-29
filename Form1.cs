@@ -20,7 +20,7 @@ namespace ProjectCompiler
             StartDate.Value = DateTime.Now;
             TargetDate.Value = DateTime.Now;
             InspectDate.Value = DateTime.Now;
-            ProjectsList.Click += ProjectsList_Click;
+            SetReadOnlyState(true);
         }
         private MySqlConnection GetConnection()
         {
@@ -29,6 +29,8 @@ namespace ProjectCompiler
         }
         public class Project
         {
+            [Required]
+            public string Encoder { get; set; }
             [Required]
             public string Title { get; set; }
             [Required]
@@ -55,151 +57,10 @@ namespace ProjectCompiler
             [StringLength(50)]
             public string Remarks { get; set; }
         }
-        private async void Submit_Click(object sender, EventArgs e)
+        public string Encoder
         {
-            try
-            {
-                Project project = new Project
-                {
-                    Title = NameBox.Text,
-                    Location = LocationCB.Text,
-                    Coordinator = PCBox.Text,
-                    Contractor = ConBox.Text,
-                    Source = SourceBox.Text,
-                    TotalCost = decimal.Parse(TCBox.Text, System.Globalization.NumberStyles.Currency),
-                    Budget = decimal.Parse(BudgetBox.Text, System.Globalization.NumberStyles.Currency),
-                    Notice = NoticeDate.Value,
-                    Start = StartDate.Value,
-                    Target = TargetDate.Value,
-                    Calendar = CalendarBox.Text,
-                    Extension = ExtBox.Text,
-                    Status = Convert.ToInt32(StatusBox.Text),
-                    Incurred = decimal.Parse(IncurredBox.Text, System.Globalization.NumberStyles.Currency).ToString("0.000"),
-                    Inspect = InspectDate.Value,
-                    Remarks = RemarksBox.Text
-                };
-
-                if (ValidateProject(project))
-                {
-                    await InsertProjectAsync(project);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Please fill the form. Error: {ex.Message}");
-            }
-        }
-        private bool ValidateProject(Project project)
-        {
-            ValidationContext context = new ValidationContext(project);
-            List<ValidationResult> results = new List<ValidationResult>();
-            Validator.TryValidateObject(project, context, results, true);
-
-            if (results.Count > 0)
-            {
-                StringBuilder errorMessage = new StringBuilder("Please fix the following errors:\n");
-                results.ForEach(result => errorMessage.AppendLine($"- {result.ErrorMessage}"));
-                MessageBox.Show(errorMessage.ToString(), "Validation Error");
-                return false;
-            }
-            return true;
-        }
-        private async Task InsertProjectAsync(Project project)
-        {
-            int currentYear = DateTime.Now.Year;
-            using (MySqlConnection con = GetConnection())
-            {
-                await con.OpenAsync();
-                string query = "INSERT INTO project_tb (project_year, project_title, project_location, project_totalcost, project_budget, date_notice, date_start, date_days, date_extension, date_target, project_status, project_incurred, date_inspection, project_remarks, project_coordinator, project_source, project_contractor) VALUES (@year, @title, @loc, @tc, @budget, @notice, @start, @days, @ext, @target, @status, @incurred, @inspect, @remarks, @pc, @source, @con)";
-                MySqlCommand command = new MySqlCommand(query, con);
-
-                command.Parameters.AddWithValue("@year", currentYear);
-                command.Parameters.AddWithValue("@title", project.Title);
-                command.Parameters.AddWithValue("@loc", project.Location);
-                command.Parameters.AddWithValue("@tc", project.TotalCost);
-                command.Parameters.AddWithValue("@budget", project.Budget);
-                command.Parameters.AddWithValue("@notice", project.Notice);
-                command.Parameters.AddWithValue("@start", project.Start);
-                command.Parameters.AddWithValue("@days", project.Calendar);
-                command.Parameters.AddWithValue("@ext", project.Extension);
-                command.Parameters.AddWithValue("@target", project.Target);
-                command.Parameters.AddWithValue("@status", project.Status);
-                command.Parameters.AddWithValue("@incurred", project.Incurred);
-                command.Parameters.AddWithValue("@inspect", project.Inspect);
-                command.Parameters.AddWithValue("@remarks", project.Remarks);
-                command.Parameters.AddWithValue("@pc", project.Coordinator);
-                command.Parameters.AddWithValue("@source", project.Source);
-                command.Parameters.AddWithValue("@con", project.Contractor);
-
-                try
-                {
-                    await command.ExecuteNonQueryAsync();
-                    MessageBox.Show("Project submitted successfully!");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error in submitting project: {ex.Message}");
-                }
-            }
-        }
-        private void ProjectsList_Click(object sender, EventArgs e)
-        {
-            using (Form3 loginForm = new Form3())
-            {
-                // Show Form3 as a dialog to enforce login
-                if (loginForm.ShowDialog() == DialogResult.OK)
-                {
-                    if (form2Instance == null)
-                    {
-                        form2Instance = new Form2(this);
-                        form2Instance.FormClosed += (s, args) => form2Instance = null;
-                    }
-                    form2Instance.Show();
-                    form2Instance.BringToFront();
-                }
-                else
-                {
-                    // Handle login failure
-                    MessageBox.Show("Login failed. Please try again.");
-                }
-            }
-        }
-        private void StartDate_ValueChanged(object sender, EventArgs e)
-        {
-            UpdateTargetDate();
-        }
-        private void CalendarBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                UpdateTargetDate();
-            }
-        }
-        private void UpdateTargetDate()
-        {
-            if (string.IsNullOrEmpty(CalendarBox.Text) || string.IsNullOrEmpty(StartDate.Text))
-            {
-                CalendarBox.Text = "";
-                TargetDate.Value = DateTime.Now;
-                return;
-            }
-
-            try
-            {
-                DateTime startDate = DateTime.Parse(StartDate.Text);
-                if (int.TryParse(CalendarBox.Text, out int daysToAdd))
-                {
-                    TargetDate.Value = startDate.AddDays(daysToAdd);
-                }
-                else
-                {
-                    CalendarBox.Text = "Invalid number";
-                }
-            }
-            catch (FormatException)
-            {
-                CalendarBox.Text = "Invalid Date Format";
-            }
+            get { return EncoderBox.Text; }
+            set { EncoderBox.Text = value; }
         }
         public string Title
         {
@@ -281,6 +142,202 @@ namespace ProjectCompiler
             get { return RemarksBox.Text; }
             set { RemarksBox.Text = value; }
         }
+        private void ClearAll_Click(object sender, EventArgs e)
+        {
+            EncoderBox.Text = "";
+            NameBox.Text = "";
+            LocationCB.Text = "";
+            PCBox.Text = "";
+            ConBox.Text = "";
+            SourceBox.Text = "";
+            TCBox.Text = "";
+            BudgetBox.Text = "";
+            CalendarBox.Text = "";
+            ExtBox.Text = "";
+            StatusBox.Text = "";
+            IncurredBox.Text = "";
+            RemarksBox.Text = "";
 
+            NoticeDate.Value = DateTime.Now;
+            StartDate.Value = DateTime.Now;
+            TargetDate.Value = DateTime.Now;
+            InspectDate.Value = DateTime.Now;
+        }
+        private async void Submit_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Project project = new Project
+                {
+                    Encoder = EncoderBox.Text,
+                    Title = NameBox.Text,
+                    Location = LocationCB.Text,
+                    Coordinator = PCBox.Text,
+                    Contractor = ConBox.Text,
+                    Source = SourceBox.Text,
+                    TotalCost = decimal.Parse(TCBox.Text, System.Globalization.NumberStyles.Currency),
+                    Budget = decimal.Parse(BudgetBox.Text, System.Globalization.NumberStyles.Currency),
+                    Notice = NoticeDate.Value,
+                    Start = StartDate.Value,
+                    Target = TargetDate.Value,
+                    Calendar = CalendarBox.Text,
+                    Extension = ExtBox.Text,
+                    Status = Convert.ToInt32(StatusBox.Text),
+                    Incurred = decimal.Parse(IncurredBox.Text, System.Globalization.NumberStyles.Currency).ToString("0.000"),
+                    Inspect = InspectDate.Value,
+                    Remarks = RemarksBox.Text
+                };
+
+                if (ValidateProject(project))
+                {
+                    await InsertProjectAsync(project);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Please fill the form. Error: {ex.Message}");
+            }
+        }
+        private bool ValidateProject(Project project)
+        {
+            ValidationContext context = new ValidationContext(project);
+            List<ValidationResult> results = new List<ValidationResult>();
+            Validator.TryValidateObject(project, context, results, true);
+
+            if (results.Count > 0)
+            {
+                StringBuilder errorMessage = new StringBuilder("Please fix the following errors:\n");
+                results.ForEach(result => errorMessage.AppendLine($"- {result.ErrorMessage}"));
+                MessageBox.Show(errorMessage.ToString(), "Validation Error");
+                return false;
+            }
+            return true;
+        }
+        private async Task InsertProjectAsync(Project project)
+        {
+            int currentYear = DateTime.Now.Year;
+            using (MySqlConnection con = GetConnection())
+            {
+                await con.OpenAsync();
+                string query = "INSERT INTO project_tb (project_year, project_title, project_location, project_totalcost, project_budget, date_notice, date_start, date_days, date_extension, date_target, project_status, project_incurred, date_inspection, project_remarks, project_coordinator, project_source, project_contractor, project_encoder) VALUES (@year, @title, @loc, @tc, @budget, @notice, @start, @days, @ext, @target, @status, @incurred, @inspect, @remarks, @pc, @source, @con, @enc)";
+                MySqlCommand command = new MySqlCommand(query, con);
+
+                command.Parameters.AddWithValue("@year", currentYear);
+                command.Parameters.AddWithValue("@title", project.Title);
+                command.Parameters.AddWithValue("@loc", project.Location);
+                command.Parameters.AddWithValue("@tc", project.TotalCost);
+                command.Parameters.AddWithValue("@budget", project.Budget);
+                command.Parameters.AddWithValue("@notice", project.Notice);
+                command.Parameters.AddWithValue("@start", project.Start);
+                command.Parameters.AddWithValue("@days", project.Calendar);
+                command.Parameters.AddWithValue("@ext", project.Extension);
+                command.Parameters.AddWithValue("@target", project.Target);
+                command.Parameters.AddWithValue("@status", project.Status);
+                command.Parameters.AddWithValue("@incurred", project.Incurred);
+                command.Parameters.AddWithValue("@inspect", project.Inspect);
+                command.Parameters.AddWithValue("@remarks", project.Remarks);
+                command.Parameters.AddWithValue("@pc", project.Coordinator);
+                command.Parameters.AddWithValue("@source", project.Source);
+                command.Parameters.AddWithValue("@con", project.Contractor);
+                command.Parameters.AddWithValue("@enc", project.Encoder);
+
+                try
+                {
+                    await command.ExecuteNonQueryAsync();
+                    MessageBox.Show("Project submitted successfully!");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error in submitting project: {ex.Message}");
+                }
+            }
+        }
+        private void ProjectsList_Click(object sender, EventArgs e)
+        {
+            using (Form3 loginForm = new Form3())
+            {
+                // Show Form3 as a dialog to enforce login
+                if (loginForm.ShowDialog() == DialogResult.OK)
+                {
+                    if (form2Instance == null)
+                    {
+                        form2Instance = new Form2(this);
+                        form2Instance.FormClosed += (s, args) => form2Instance = null;
+                    }
+                    form2Instance.Show();
+                    form2Instance.BringToFront();
+                }
+                else
+                {
+                    // Handle login failure
+                    MessageBox.Show("Login failed. Please try again.");
+                }
+            }
+        }
+        private void StartDate_ValueChanged(object sender, EventArgs e)
+        {
+            UpdateTargetDate();
+        }
+        private void CalendarBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                UpdateTargetDate();
+            }
+        }
+        private void UpdateTargetDate()
+        {
+            if (string.IsNullOrEmpty(CalendarBox.Text) || string.IsNullOrEmpty(StartDate.Text))
+            {
+                CalendarBox.Text = "";
+                TargetDate.Value = DateTime.Now;
+                return;
+            }
+
+            try
+            {
+                DateTime startDate = DateTime.Parse(StartDate.Text);
+                if (int.TryParse(CalendarBox.Text, out int daysToAdd))
+                {
+                    TargetDate.Value = startDate.AddDays(daysToAdd);
+                }
+                else
+                {
+                    CalendarBox.Text = "Invalid number";
+                }
+            }
+            catch (FormatException)
+            {
+                CalendarBox.Text = "Invalid Date Format";
+            }
+        }
+
+
+        private void SetReadOnlyState(bool isReadOnly)
+        {
+            EncoderBox.ReadOnly = isReadOnly;
+            NameBox.ReadOnly = isReadOnly;
+            LocationCB.Enabled = !isReadOnly; // ComboBox doesn't have ReadOnly property
+            PCBox.ReadOnly = isReadOnly;
+            ConBox.ReadOnly = isReadOnly;
+            SourceBox.ReadOnly = isReadOnly;
+            TCBox.ReadOnly = isReadOnly;
+            BudgetBox.ReadOnly = isReadOnly;
+            NoticeDate.Enabled = !isReadOnly; // DateTimePicker doesn't have ReadOnly property
+            StartDate.Enabled = !isReadOnly;
+            CalendarBox.ReadOnly = isReadOnly;
+            ExtBox.ReadOnly = isReadOnly;
+            StatusBox.ReadOnly = isReadOnly;
+            IncurredBox.ReadOnly = isReadOnly;
+            InspectDate.Enabled = !isReadOnly;
+            RemarksBox.ReadOnly = isReadOnly;
+        }
+
+        private void Edit_Click(object sender, EventArgs e)
+        {
+            // Toggle read-only state
+            bool isReadOnly = !EncoderBox.ReadOnly;
+            SetReadOnlyState(isReadOnly);
+        }
     }
 }
