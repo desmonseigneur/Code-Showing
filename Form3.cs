@@ -23,7 +23,7 @@ namespace ProjectCompiler
             string password = PWBox.Text;
 
             // Replace with your actual authentication logic
-            if (username == "admin" && password == "0000")
+            if (username == "desmon" && password == "Edelwe!ss00")
             {
                 // Authentication successful
                 this.DialogResult = DialogResult.OK;
