@@ -211,6 +211,7 @@ namespace ProjectCompiler
 
                 form1Instance.Show(); // Bring Form1 to the front
                 form1Instance.BringToFront();
+                form1Instance.Edit.Visible = true;
             }
             catch (Exception ex)
             {
@@ -218,6 +219,8 @@ namespace ProjectCompiler
                 MessageBox.Show("Please click 'Show Full Table' first before transferring data");
             }
         }
+
+
         private void FilterData(string selectedColumn, string searchText)
         {
             // Suspend binding to avoid CurrencyManager issues
