@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ProjectCompiler
 {
@@ -55,6 +56,7 @@ namespace ProjectCompiler
             public DateTime? Inspect { get; set; }
             [StringLength(50)]
             public string Remarks { get; set; }
+            public int Id { get; set; }
         }
         public string Encoder
         {
@@ -188,9 +190,10 @@ namespace ProjectCompiler
             SetReadOnlyState(isReadOnly);
             Edit.Visible = false;
         }
-        public void SetEditButtonVisibility(bool isVisible)
+        public void SetButtonsVisibility(bool isVisible)
         {
             Edit.Visible = isVisible;
+            Replace.Visible = isVisible;
         }
         private async void Submit_Click(object sender, EventArgs e)
         {
@@ -226,6 +229,43 @@ namespace ProjectCompiler
             {
                 MessageBox.Show($"Please fill the form. Error: {ex.Message}");
             }
+        }
+
+        private async void Replace_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Project project = new Project
+                {
+                    Encoder = EncoderBox.Text,
+                    Title = NameBox.Text,
+                    Location = LocationCB.Text,
+                    Coordinator = PCBox.Text,
+                    Contractor = ConBox.Text,
+                    Source = SourceBox.Text,
+                    TotalCost = decimal.Parse(TCBox.Text, System.Globalization.NumberStyles.Currency),
+                    Budget = decimal.Parse(BudgetBox.Text, System.Globalization.NumberStyles.Currency),
+                    Notice = NoticeDate.Value,
+                    Start = StartDate.Value,
+                    Target = TargetDate.Value,
+                    Calendar = CalendarBox.Text,
+                    Extension = ExtBox.Text,
+                    Status = Convert.ToInt32(StatusBox.Text),
+                    Incurred = decimal.Parse(IncurredBox.Text, System.Globalization.NumberStyles.Currency).ToString("0.000"),
+                    Inspect = InspectDate.Value,
+                    Remarks = RemarksBox.Text
+                };
+
+                if (ValidateProject(project))
+                {
+                    await UpdateProjectAsync(project);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating project: {ex.Message}");
+            }
+            Replace.Visible = false;
         }
         private bool ValidateProject(Project project)
         {
@@ -278,6 +318,44 @@ namespace ProjectCompiler
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Error in submitting project: {ex.Message}");
+                }
+            }
+        }
+        private async Task UpdateProjectAsync(Project project)
+        {
+            using (MySqlConnection con = GetConnection())
+            {
+                await con.OpenAsync();
+                string query = "UPDATE project_tb SET project_title = @title, project_location = @loc, project_totalcost = @tc, project_budget = @budget, date_notice = @notice, date_start = @start, date_days = @days, date_extension = @ext, date_target = @target, project_status = @status, project_incurred = @incurred, date_inspection = @inspect, project_remarks = @remarks, project_coordinator = @pc, project_source = @source, project_contractor = @con, project_encoder = @enc WHERE project_id = @id";
+                MySqlCommand command = new MySqlCommand(query, con);
+
+                command.Parameters.AddWithValue("@id", project.Id); // Use the Id to identify the row
+                command.Parameters.AddWithValue("@title", project.Title);
+                command.Parameters.AddWithValue("@loc", project.Location);
+                command.Parameters.AddWithValue("@tc", project.TotalCost);
+                command.Parameters.AddWithValue("@budget", project.Budget);
+                command.Parameters.AddWithValue("@notice", project.Notice);
+                command.Parameters.AddWithValue("@start", project.Start);
+                command.Parameters.AddWithValue("@days", project.Calendar);
+                command.Parameters.AddWithValue("@ext", project.Extension);
+                command.Parameters.AddWithValue("@target", project.Target);
+                command.Parameters.AddWithValue("@status", project.Status);
+                command.Parameters.AddWithValue("@incurred", project.Incurred);
+                command.Parameters.AddWithValue("@inspect", project.Inspect);
+                command.Parameters.AddWithValue("@remarks", project.Remarks);
+                command.Parameters.AddWithValue("@pc", project.Coordinator);
+                command.Parameters.AddWithValue("@source", project.Source);
+                command.Parameters.AddWithValue("@con", project.Contractor);
+                command.Parameters.AddWithValue("@enc", project.Encoder);
+
+                try
+                {
+                    await command.ExecuteNonQueryAsync();
+                    MessageBox.Show("Project updated successfully!");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error updating project: {ex.Message}");
                 }
             }
         }
@@ -337,10 +415,6 @@ namespace ProjectCompiler
             {
                 CalendarBox.Text = "Invalid Date Format";
             }
-        }
-        private void Replace_Click(object sender, EventArgs e)
-        {
-
-        }
+        }        
     }
 }
