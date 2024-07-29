@@ -186,8 +186,12 @@ namespace ProjectCompiler
             // Toggle read-only state
             bool isReadOnly = !EncoderBox.ReadOnly;
             SetReadOnlyState(isReadOnly);
+            Edit.Visible = false;
         }
-
+        public void SetEditButtonVisibility(bool isVisible)
+        {
+            Edit.Visible = isVisible;
+        }
         private async void Submit_Click(object sender, EventArgs e)
         {
             try
@@ -333,6 +337,10 @@ namespace ProjectCompiler
             {
                 CalendarBox.Text = "Invalid Date Format";
             }
+        }
+        private void Replace_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
