@@ -8,6 +8,7 @@ namespace ProjectCompiler
 {
     public partial class Form2 : Form
     {
+        private const int ColumnCount = 17; // Define constant for column count
         private string selectedColumnName = "";
         private readonly Form1 form1Instance;
         public Form2(Form1 form1)
@@ -22,8 +23,9 @@ namespace ProjectCompiler
         }
         private MySqlConnection GetConnection()
         {
-            string connstring = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
+            const string connstring = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
             var connection = new MySqlConnection(connstring);
+
             try
             {
                 connection.Open();
@@ -33,6 +35,12 @@ namespace ProjectCompiler
                 MessageBox.Show($"Error connecting to database: {ex.Message}");
                 return null;
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An unexpected error occurred: {ex.Message}");
+                return null;
+            }
+
             return connection;
         }
         private void PopulateDataGridView()
@@ -41,13 +49,13 @@ namespace ProjectCompiler
             {
                 if (connection == null) return;
 
-                string query = "SELECT project_title AS 'Project/Program/Activity', project_location AS 'Location', " +
-                               "project_totalcost AS 'Total Cost', project_budget AS 'Approved Budget in Contract (ABC)', " +
-                               "date_notice AS 'Notice to Proceed', date_start AS 'Date Started', date_target AS 'Target Completion Date', " +
-                               "project_status AS 'Project Status (%)', project_incurred AS 'Total Cost Incurred to Date', " +
-                               "date_inspection AS 'Inspection Date', project_coordinator AS 'Project Coordinator', " +
-                               "project_source AS 'Source of Fund', project_contractor AS 'Contractor', project_encoder AS 'Encoder', " +
-                               "project_id AS 'Id' FROM dmedb.project_tb";
+                const string query = "SELECT project_title AS 'Project/Program/Activity', project_location AS 'Location', " +
+                                     "project_totalcost AS 'Total Cost', project_budget AS 'Approved Budget in Contract (ABC)', " +
+                                     "date_notice AS 'Notice to Proceed', date_start AS 'Date Started', date_target AS 'Target Completion Date', " +
+                                     "project_status AS 'Project Status (%)', project_incurred AS 'Total Cost Incurred to Date', " +
+                                     "date_inspection AS 'Inspection Date', project_coordinator AS 'Project Coordinator', " +
+                                     "project_source AS 'Source of Fund', project_contractor AS 'Contractor', project_encoder AS 'Encoder', " +
+                                     "project_id AS 'Id' FROM dmedb.project_tb";
 
                 var adapter = new MySqlDataAdapter(query, connection);
                 var data = new DataTable();
@@ -61,13 +69,13 @@ namespace ProjectCompiler
             {
                 if (connection == null) return;
 
-                string query = "SELECT project_year AS 'Project Year', project_title AS 'Project/Program/Activity', " +
-                               "project_location AS 'Location', project_totalcost AS 'Total Cost', project_budget AS 'Approved Budget in Contract (ABC)', " +
-                               "date_notice AS 'Notice to Proceed', date_start AS 'Date Started', date_days AS 'No. of Calendar Days', " +
-                               "date_extension AS 'No. of Extension', date_target AS 'Target Completion Date', project_status AS 'Project Status (%)', " +
-                               "project_incurred AS 'Total Cost Incurred to Date', project_photos AS 'Photos', date_inspection AS 'Inspection Date', " +
-                               "project_remarks AS 'Remarks', project_coordinator AS 'Project Coordinator', project_source AS 'Source of Fund', " +
-                               "project_contractor AS 'Contractor', project_encoder AS 'Encoder', project_id AS 'Id' FROM dmedb.project_tb";
+                const string query = "SELECT project_year AS 'Project Year', project_title AS 'Project/Program/Activity', " +
+                                     "project_location AS 'Location', project_totalcost AS 'Total Cost', project_budget AS 'Approved Budget in Contract (ABC)', " +
+                                     "date_notice AS 'Notice to Proceed', date_start AS 'Date Started', date_days AS 'No. of Calendar Days', " +
+                                     "date_extension AS 'No. of Extension', date_target AS 'Target Completion Date', project_status AS 'Project Status (%)', " +
+                                     "project_incurred AS 'Total Cost Incurred to Date', project_photos AS 'Photos', date_inspection AS 'Inspection Date', " +
+                                     "project_remarks AS 'Remarks', project_coordinator AS 'Project Coordinator', project_source AS 'Source of Fund', " +
+                                     "project_contractor AS 'Contractor', project_encoder AS 'Encoder', project_id AS 'Id' FROM dmedb.project_tb";
 
                 var adapter = new MySqlDataAdapter(query, connection);
                 var populatedData = new DataTable();
@@ -95,7 +103,6 @@ namespace ProjectCompiler
                     DBViewer.Columns[columnName].DisplayIndex = newIndex++;
                 }
             }
-
             if (DBViewer.Columns.Contains("Encoder"))
             {
                 DBViewer.Columns["Encoder"].Visible = false;
@@ -118,7 +125,6 @@ namespace ProjectCompiler
         {
             selectedColumnName = SearchCB.SelectedItem.ToString();
         }
-
         private void SearchBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter) return;
@@ -130,7 +136,6 @@ namespace ProjectCompiler
                 MessageBox.Show("Invalid year format! Please enter a 4-digit year (e.g., 20XX).");
                 return;
             }
-
             FilterData(selectedColumnName, searchText);
         }
         private void Show_Click(object sender, EventArgs e)
@@ -159,9 +164,9 @@ namespace ProjectCompiler
         }
         public void UpdateRow(int rowIndex, string[] newValues)
         {
-            if (rowIndex < 0 || rowIndex >= DBViewer.Rows.Count || newValues.Length != 17) return;
+            if (rowIndex < 0 || rowIndex >= DBViewer.Rows.Count || newValues.Length != ColumnCount) return;
 
-            for (int i = 0; i < 17; i++)
+            for (int i = 0; i < ColumnCount; i++)
             {
                 DBViewer.Rows[rowIndex].Cells[i].Value = newValues[i];
             }
