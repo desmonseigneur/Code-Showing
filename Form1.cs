@@ -20,7 +20,6 @@ namespace ProjectCompiler
             StartDate.Value = DateTime.Now;
             TargetDate.Value = DateTime.Now;
             InspectDate.Value = DateTime.Now;
-            SetReadOnlyState(true);
         }
         private MySqlConnection GetConnection()
         {
@@ -163,6 +162,32 @@ namespace ProjectCompiler
             TargetDate.Value = DateTime.Now;
             InspectDate.Value = DateTime.Now;
         }
+        public void SetReadOnlyState(bool isReadOnly)
+        {
+            EncoderBox.ReadOnly = isReadOnly;
+            NameBox.ReadOnly = isReadOnly;
+            LocationCB.Enabled = !isReadOnly; // ComboBox doesn't have ReadOnly property
+            PCBox.ReadOnly = isReadOnly;
+            ConBox.ReadOnly = isReadOnly;
+            SourceBox.ReadOnly = isReadOnly;
+            TCBox.ReadOnly = isReadOnly;
+            BudgetBox.ReadOnly = isReadOnly;
+            NoticeDate.Enabled = !isReadOnly; // DateTimePicker doesn't have ReadOnly property
+            StartDate.Enabled = !isReadOnly;
+            CalendarBox.ReadOnly = isReadOnly;
+            ExtBox.ReadOnly = isReadOnly;
+            StatusBox.ReadOnly = isReadOnly;
+            IncurredBox.ReadOnly = isReadOnly;
+            InspectDate.Enabled = !isReadOnly;
+            RemarksBox.ReadOnly = isReadOnly;
+        }
+        private void Edit_Click(object sender, EventArgs e)
+        {
+            // Toggle read-only state
+            bool isReadOnly = !EncoderBox.ReadOnly;
+            SetReadOnlyState(isReadOnly);
+        }
+
         private async void Submit_Click(object sender, EventArgs e)
         {
             try
@@ -256,7 +281,6 @@ namespace ProjectCompiler
         {
             using (Form3 loginForm = new Form3())
             {
-                // Show Form3 as a dialog to enforce login
                 if (loginForm.ShowDialog() == DialogResult.OK)
                 {
                     if (form2Instance == null)
@@ -269,7 +293,6 @@ namespace ProjectCompiler
                 }
                 else
                 {
-                    // Handle login failure
                     MessageBox.Show("Login failed. Please try again.");
                 }
             }
@@ -310,34 +333,6 @@ namespace ProjectCompiler
             {
                 CalendarBox.Text = "Invalid Date Format";
             }
-        }
-
-
-        private void SetReadOnlyState(bool isReadOnly)
-        {
-            EncoderBox.ReadOnly = isReadOnly;
-            NameBox.ReadOnly = isReadOnly;
-            LocationCB.Enabled = !isReadOnly; // ComboBox doesn't have ReadOnly property
-            PCBox.ReadOnly = isReadOnly;
-            ConBox.ReadOnly = isReadOnly;
-            SourceBox.ReadOnly = isReadOnly;
-            TCBox.ReadOnly = isReadOnly;
-            BudgetBox.ReadOnly = isReadOnly;
-            NoticeDate.Enabled = !isReadOnly; // DateTimePicker doesn't have ReadOnly property
-            StartDate.Enabled = !isReadOnly;
-            CalendarBox.ReadOnly = isReadOnly;
-            ExtBox.ReadOnly = isReadOnly;
-            StatusBox.ReadOnly = isReadOnly;
-            IncurredBox.ReadOnly = isReadOnly;
-            InspectDate.Enabled = !isReadOnly;
-            RemarksBox.ReadOnly = isReadOnly;
-        }
-
-        private void Edit_Click(object sender, EventArgs e)
-        {
-            // Toggle read-only state
-            bool isReadOnly = !EncoderBox.ReadOnly;
-            SetReadOnlyState(isReadOnly);
         }
     }
 }
