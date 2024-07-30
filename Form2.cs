@@ -11,20 +11,24 @@ namespace ProjectCompiler
         private const int ColumnCount = 17; // Define constant for column count
         private string selectedColumnName = "";
         private readonly Form1 form1Instance;
+
         public Form2(Form1 form1)
         {
             InitializeComponent();
             form1Instance = form1;
         }
+
         private void Form2_Load(object sender, EventArgs e)
         {
             PopulateDataGridView();
             DBViewer.Columns["Id"].Visible = false;
         }
+
         private MySqlConnection GetConnection()
         {
             const string connstring = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
             var connection = new MySqlConnection(connstring);
+
             try
             {
                 connection.Open();
@@ -42,13 +46,14 @@ namespace ProjectCompiler
 
             return connection;
         }
+
         private void PopulateDataGridView()
         {
             using (var connection = GetConnection())
             {
                 if (connection == null) return;
 
-                const string query = "SELECT project_title AS 'Project/Program/Activity', project_location AS 'Location', " +
+                const string query = "SELECT project_year AS 'Project Year', project_title AS 'Project/Program/Activity', project_location AS 'Location', " +
                                      "project_totalcost AS 'Total Cost', project_budget AS 'Approved Budget in Contract (ABC)', " +
                                      "date_notice AS 'Notice to Proceed', date_start AS 'Date Started', date_target AS 'Target Completion Date', " +
                                      "project_status AS 'Project Status (%)', project_incurred AS 'Total Cost Incurred to Date', " +
@@ -56,12 +61,26 @@ namespace ProjectCompiler
                                      "project_source AS 'Source of Fund', project_contractor AS 'Contractor', project_encoder AS 'Encoder', " +
                                      "project_id AS 'Id' FROM dmedb.project_tb";
 
+                DBViewer.DataBindingComplete += (s, e) =>
+                {
+                    var column = DBViewer.Columns["Project Year"];
+                    var column2 = DBViewer.Columns["Encoder"];
+                    if (column != null)
+                    {
+                        column.Visible = false;
+                    }
+                    if (column2 != null)
+                    {
+                        column2.Visible = true;
+                    }
+                };
                 var adapter = new MySqlDataAdapter(query, connection);
                 var data = new DataTable();
                 adapter.Fill(data);
                 DBViewer.DataSource = data;
             }
         }
+
         private void UpdatePopulateDataGridView()
         {
             using (var connection = GetConnection())
@@ -76,6 +95,19 @@ namespace ProjectCompiler
                                      "project_remarks AS 'Remarks', project_coordinator AS 'Project Coordinator', project_source AS 'Source of Fund', " +
                                      "project_contractor AS 'Contractor', project_encoder AS 'Encoder', project_id AS 'Id' FROM dmedb.project_tb";
 
+                DBViewer.DataBindingComplete += (s, e) =>
+                {
+                    var column = DBViewer.Columns["Project Year"];
+                    var column2 = DBViewer.Columns["Encoder"];
+                    if (column != null)
+                    {
+                        column.Visible = true;
+                    }
+                    if (column2 != null)
+                    {
+                        column2.Visible = false;
+                    }
+                };
                 var adapter = new MySqlDataAdapter(query, connection);
                 var populatedData = new DataTable();
                 adapter.Fill(populatedData);
@@ -85,6 +117,7 @@ namespace ProjectCompiler
                 DBViewer.Columns["Encoder"].Visible = false;
             }
         }
+
         private void SetColumnOrderAndVisibility()
         {
             var desiredOrder = new[]
@@ -93,6 +126,7 @@ namespace ProjectCompiler
                 "Date Started", "No. of Calendar Days", "No. of Extension", "Target Completion", "Project Status (%)",
                 "Total Cost Incurred to Date", "Photos", "Inspection Date", "Remarks", "Project Coordinator", "Source of Fund", "Contractor"
             };
+
             int newIndex = 0;
             foreach (var columnName in desiredOrder)
             {
@@ -106,6 +140,7 @@ namespace ProjectCompiler
                 DBViewer.Columns["Encoder"].Visible = false;
             }
         }
+
         private void FilterData(string selectedColumn, string searchText)
         {
             // Suspend binding to avoid CurrencyManager issues
@@ -143,24 +178,9 @@ namespace ProjectCompiler
             Show.Visible = false;
             Revert.Visible = true;
         }
-        public void RefreshDataGridView()
-        {
-            using (var con = GetConnection())
-            {
-                con.Open();
-                string query = "SELECT * FROM project_tb";
-                using (var adapter = new MySqlDataAdapter(query, con))
-                {
-                    var dataTable = new DataTable();
-                    adapter.Fill(dataTable);
-                    DBViewer.DataSource = dataTable;
-                }
-            }
-        }
-
         private void Revert_Click(object sender, EventArgs e)
         {
-            RefreshDataGridView();
+            PopulateDataGridView();
             Show.Visible = true;
             Revert.Visible = false;
         }
