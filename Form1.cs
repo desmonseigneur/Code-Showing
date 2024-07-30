@@ -141,6 +141,8 @@ namespace ProjectCompiler
             get => RemarksBox.Text;
             set => RemarksBox.Text = value;
         }
+        public int SelectedProjectId { get; set; }
+
         // Methods
         private void ClearAll_Click(object sender, EventArgs e)
         {
@@ -208,6 +210,7 @@ namespace ProjectCompiler
                 var project = GetProjectFromForm();
                 if (ValidateProject(project))
                 {
+                    MessageBox.Show($"Selected ID: {SelectedProjectId}");
                     await UpdateProjectAsync(project);
                     var form2 = Application.OpenForms.OfType<Form2>().FirstOrDefault();
                 }
@@ -295,7 +298,15 @@ namespace ProjectCompiler
             using (var con = GetConnection())
             {
                 await con.OpenAsync();
-                string query = "UPDATE project_tb SET project_title = @title, project_location = @loc, project_totalcost = @tc, project_budget = @budget, date_notice = @notice, date_start = @start, date_days = @days, date_extension = @ext, date_target = @target, project_status = @status, project_incurred = @incurred, date_inspection = @inspect, project_remarks = @remarks, project_coordinator = @pc, project_source = @source, project_contractor = @con, project_encoder = @enc WHERE project_id = @id";
+                string query = @"UPDATE project_tb 
+                         SET project_title = @title, project_location = @loc, project_totalcost = @tc, 
+                             project_budget = @budget, date_notice = @notice, date_start = @start, 
+                             date_days = @days, date_extension = @ext, date_target = @target, 
+                             project_status = @status, project_incurred = @incurred, 
+                             date_inspection = @inspect, project_remarks = @remarks, 
+                             project_coordinator = @pc, project_source = @source, 
+                             project_contractor = @con, project_encoder = @enc 
+                         WHERE project_id = @id";
                 using (var command = new MySqlCommand(query, con))
                 {
                     command.Parameters.AddWithValue("@id", project.Id);
