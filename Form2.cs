@@ -11,24 +11,20 @@ namespace ProjectCompiler
         private const int ColumnCount = 17; // Define constant for column count
         private string selectedColumnName = "";
         private readonly Form1 form1Instance;
-
         public Form2(Form1 form1)
         {
             InitializeComponent();
             form1Instance = form1;
         }
-
         private void Form2_Load(object sender, EventArgs e)
         {
             PopulateDataGridView();
             DBViewer.Columns["Id"].Visible = false;
         }
-
         private MySqlConnection GetConnection()
         {
             const string connstring = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
             var connection = new MySqlConnection(connstring);
-
             try
             {
                 connection.Open();
@@ -46,7 +42,6 @@ namespace ProjectCompiler
 
             return connection;
         }
-
         private void PopulateDataGridView()
         {
             using (var connection = GetConnection())
@@ -67,7 +62,6 @@ namespace ProjectCompiler
                 DBViewer.DataSource = data;
             }
         }
-
         private void UpdatePopulateDataGridView()
         {
             using (var connection = GetConnection())
@@ -91,7 +85,6 @@ namespace ProjectCompiler
                 DBViewer.Columns["Encoder"].Visible = false;
             }
         }
-
         private void SetColumnOrderAndVisibility()
         {
             var desiredOrder = new[]
@@ -100,7 +93,6 @@ namespace ProjectCompiler
                 "Date Started", "No. of Calendar Days", "No. of Extension", "Target Completion", "Project Status (%)",
                 "Total Cost Incurred to Date", "Photos", "Inspection Date", "Remarks", "Project Coordinator", "Source of Fund", "Contractor"
             };
-
             int newIndex = 0;
             foreach (var columnName in desiredOrder)
             {
@@ -114,7 +106,6 @@ namespace ProjectCompiler
                 DBViewer.Columns["Encoder"].Visible = false;
             }
         }
-
         private void FilterData(string selectedColumn, string searchText)
         {
             // Suspend binding to avoid CurrencyManager issues
@@ -128,12 +119,10 @@ namespace ProjectCompiler
                               row.Cells[selectedColumn]?.Value?.ToString().IndexOf(searchText, StringComparison.InvariantCultureIgnoreCase) >= 0;
             }
         }
-
         private void SearchCB_SelectedIndexChanged(object sender, EventArgs e)
         {
             selectedColumnName = SearchCB.SelectedItem.ToString();
         }
-
         private void SearchBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode != Keys.Enter) return;
@@ -147,7 +136,6 @@ namespace ProjectCompiler
             }
             FilterData(selectedColumnName, searchText);
         }
-
         private void Show_Click(object sender, EventArgs e)
         {
             UpdatePopulateDataGridView();
@@ -155,7 +143,6 @@ namespace ProjectCompiler
             Show.Visible = false;
             Revert.Visible = true;
         }
-
         private void Revert_Click(object sender, EventArgs e)
         {
             PopulateDataGridView();
@@ -168,12 +155,24 @@ namespace ProjectCompiler
             if (e.RowIndex < 0) return;
 
             var selectedRow = DBViewer.Rows[e.RowIndex];
-            form1Instance.LoadRowData(selectedRow);
-            form1Instance.Show();
-            form1Instance.BringToFront(); // Bring Form1 to the front
-            form1Instance.SetButtonsVisibility(true);
-        }
+            var form1Instance = GetOrCreateForm1Instance();
 
+            try
+            {
+                bool loadSuccess = form1Instance.LoadRowData(selectedRow);
+                form1Instance.Show();
+
+                if (loadSuccess)
+                {
+                    form1Instance.BringToFront();  // Bring Form1 to the front only if no error occurs
+                }
+                form1Instance.SetButtonsVisibility(true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading row data: {ex.Message}");
+            }
+        }
         public void UpdateRow(int rowIndex, string[] newValues)
         {
             if (rowIndex < 0 || rowIndex >= DBViewer.Rows.Count || newValues.Length != ColumnCount) return;
@@ -183,10 +182,14 @@ namespace ProjectCompiler
                 DBViewer.Rows[rowIndex].Cells[i].Value = newValues[i];
             }
         }
-
         private Form1 GetOrCreateForm1Instance()
         {
-            var form1 = Application.OpenForms.OfType<Form1>().FirstOrDefault() ?? new Form1();
+            var form1 = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+            if (form1 == null)
+            {
+                form1 = new Form1();
+                form1.Show();  // Show Form1 if it's not already open
+            }
             return form1;
         }
     }
