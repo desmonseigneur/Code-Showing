@@ -375,5 +375,25 @@ namespace ProjectCompiler
                 CalendarBox.Text = "Invalid Date Format";
             }
         }
+        public void SetProjectData(string title, string location, decimal totalCost, decimal budget, DateTime notice, DateTime start, DateTime target, string calendar, string extension, int status, decimal incurred, DateTime inspect, string remarks, string coordinator, string source, string contractor, string encoder)
+        {
+            NameBox.Text = title;
+            LocationCB.Text = location;
+            TCBox.Text = totalCost.ToString("0.000");
+            BudgetBox.Text = budget.ToString("0.000");
+            NoticeDate.Value = notice;
+            StartDate.Value = start;
+            TargetDate.Value = target;
+            CalendarBox.Text = calendar;
+            ExtBox.Text = extension;
+            StatusBox.Text = status.ToString();
+            IncurredBox.Text = incurred.ToString("0.000");
+            InspectDate.Value = inspect;
+            RemarksBox.Text = remarks;
+            PCBox.Text = coordinator;
+            SourceBox.Text = source;
+            ConBox.Text = contractor;
+            EncoderBox.Text = encoder;
+        }
     }
 }
