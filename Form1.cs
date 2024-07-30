@@ -187,7 +187,6 @@ namespace ProjectCompiler
             SetReadOnlyState(!EncoderBox.ReadOnly);
             Edit.Visible = false;
         }
-
         private void ClearAll_Click(object sender, EventArgs e)
         {
             foreach (Control control in Controls)
@@ -209,12 +208,10 @@ namespace ProjectCompiler
             form2.Show();
             form2.BringToFront();
         }
-
         private void StartDate_ValueChanged(object sender, EventArgs e)
         {
             UpdateTargetDate();
         }
-
         private void CalendarBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -367,8 +364,10 @@ namespace ProjectCompiler
                 CalendarBox.Text = "Invalid Date Format";
             }
         }
-        public void LoadRowData(DataGridViewRow row)
+        public bool LoadRowData(DataGridViewRow row)
         {
+            if (row == null) throw new ArgumentNullException(nameof(row));
+
             try
             {
                 Encoder = row.Cells["Encoder"].Value?.ToString() ?? "N/A";
@@ -391,10 +390,12 @@ namespace ProjectCompiler
 
                 // Set Form1 controls to read-only after populating them
                 SetReadOnlyState(true);
+                return true; // Indicate success
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Please click 'Show Full Table' first before transferring data.");
+                return false; // Indicate failure
             }
         }
         // Method to set read-only state for controls
@@ -416,14 +417,12 @@ namespace ProjectCompiler
                 }
             }
         }
-
         // Method to set button visibility
         public void SetButtonsVisibility(bool isVisible)
         {
             Edit.Visible = isVisible;
             Replace.Visible = isVisible;
         }
-
         // Method to handle cell double-click event in DBViewer
         private void DBViewer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -434,5 +433,4 @@ namespace ProjectCompiler
             }
         }
     }
-
 }
