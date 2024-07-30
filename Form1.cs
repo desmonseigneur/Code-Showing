@@ -317,8 +317,8 @@ namespace ProjectCompiler
                     command.Parameters.AddWithValue("@con", project.Contractor);
                     command.Parameters.AddWithValue("@enc", project.Encoder);
 
-                    await command.ExecuteNonQueryAsync();
-                    MessageBox.Show("Project updated successfully!");
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    MessageBox.Show($"{rowsAffected} row(s) updated successfully!");
                 }
             }
         }
