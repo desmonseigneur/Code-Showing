@@ -192,38 +192,42 @@ namespace ProjectCompiler
             try
             {
                 var selectedRow = DBViewer.Rows[e.RowIndex];
-                var selectedId = selectedRow.Cells["Id"].Value;
-                MessageBox.Show($"Selected ID: {selectedId}");
-                PopulateForm1Fields(selectedRow);
+
+                var title = selectedRow.Cells["Project/Program/Activity"].Value.ToString();
+                var location = selectedRow.Cells["Location"].Value.ToString();
+                var totalCost = Convert.ToDecimal(selectedRow.Cells["Total Cost"].Value);
+                var budget = Convert.ToDecimal(selectedRow.Cells["Approved Budget in Contract (ABC)"].Value);
+                var notice = Convert.ToDateTime(selectedRow.Cells["Notice to Proceed"].Value);
+                var start = Convert.ToDateTime(selectedRow.Cells["Date Started"].Value);
+                var target = Convert.ToDateTime(selectedRow.Cells["Target Completion Date"].Value);
+                var calendar = selectedRow.Cells["No. of Calendar Days"].Value.ToString();
+                var extension = selectedRow.Cells["No. of Extension"].Value.ToString();
+                var status = Convert.ToInt32(selectedRow.Cells["Project Status (%)"].Value);
+                var incurred = Convert.ToDecimal(selectedRow.Cells["Total Cost Incurred to Date"].Value);
+                var inspect = Convert.ToDateTime(selectedRow.Cells["Inspection Date"].Value);
+                var remarks = selectedRow.Cells["Remarks"].Value.ToString();
+                var coordinator = selectedRow.Cells["Project Coordinator"].Value.ToString();
+                var source = selectedRow.Cells["Source of Fund"].Value.ToString();
+                var contractor = selectedRow.Cells["Contractor"].Value.ToString();
+                var encoder = selectedRow.Cells["Encoder"].Value.ToString();
+
+                Form1 form1Instance = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+                if (form1Instance == null)
+                {
+                    form1Instance = new Form1();
+                }
+
+                form1Instance.SetProjectData(title, location, totalCost, budget, notice, start, target, calendar, extension, status, incurred, inspect, remarks, coordinator, source, contractor, encoder);
+
                 form1Instance.SetReadOnlyState(true);
+                form1Instance.SetButtonsVisibility(true);
                 form1Instance.Show();
                 form1Instance.BringToFront();
-                form1Instance.SetButtonsVisibility(true);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                MessageBox.Show("Please click 'Show Full Table' first before transferring data");
+                MessageBox.Show($"Error: {ex.Message}");
             }
-        }
-        private void PopulateForm1Fields(DataGridViewRow selectedRow)
-        {
-            form1Instance.Encoder = selectedRow.Cells["Encoder"].Value?.ToString() ?? "N/A";
-            form1Instance.Title = selectedRow.Cells["Project/Program/Activity"].Value?.ToString() ?? "N/A";
-            form1Instance.Location = selectedRow.Cells["Location"].Value?.ToString() ?? "N/A";
-            form1Instance.TotalCost = Convert.ToDecimal(selectedRow.Cells["Total Cost"].Value ?? 0);
-            form1Instance.Budget = Convert.ToDecimal(selectedRow.Cells["Approved Budget in Contract (ABC)"].Value ?? 0);
-            form1Instance.Notice = Convert.ToDateTime(selectedRow.Cells["Notice to Proceed"].Value ?? DateTime.Now);
-            form1Instance.Start = Convert.ToDateTime(selectedRow.Cells["Date Started"].Value ?? DateTime.Now);
-            form1Instance.Target = Convert.ToDateTime(selectedRow.Cells["Target Completion Date"].Value ?? DateTime.Now);
-            form1Instance.Calendar = selectedRow.Cells["No. of Calendar Days"].Value?.ToString() ?? "0";
-            form1Instance.Extension = selectedRow.Cells["No. of Extension"].Value?.ToString() ?? "0";
-            form1Instance.Status = Convert.ToInt32(selectedRow.Cells["Project Status (%)"].Value ?? 0);
-            form1Instance.Incurred = Convert.ToDecimal(selectedRow.Cells["Total Cost Incurred to Date"].Value ?? 0);
-            form1Instance.Inspect = Convert.ToDateTime(selectedRow.Cells["Inspection Date"].Value ?? DateTime.Now);
-            form1Instance.Remarks = selectedRow.Cells["Remarks"].Value?.ToString() ?? "N/A";
-            form1Instance.Coordinator = selectedRow.Cells["Project Coordinator"].Value?.ToString() ?? "N/A";
-            form1Instance.Source = selectedRow.Cells["Source of Fund"].Value?.ToString() ?? "N/A";
-            form1Instance.Contractor = selectedRow.Cells["Contractor"].Value?.ToString() ?? "N/A";
         }
     }
 }
