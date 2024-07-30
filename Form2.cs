@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 
@@ -8,8 +11,8 @@ namespace ProjectCompiler
 {
     public partial class Form2 : Form
     {
-        private const int ColumnCount = 17; // Define constant for column count
-        private string selectedColumnName = "";
+        private const int ColumnCount = 17;
+        private string selectedColumnName = string.Empty;
         private readonly Form1 form1Instance;
 
         public Form2(Form1 form1)
@@ -17,18 +20,15 @@ namespace ProjectCompiler
             InitializeComponent();
             form1Instance = form1;
         }
-
         private void Form2_Load(object sender, EventArgs e)
         {
             PopulateDataGridView();
             DBViewer.Columns["Id"].Visible = false;
         }
-
         private MySqlConnection GetConnection()
         {
             const string connstring = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
             var connection = new MySqlConnection(connstring);
-
             try
             {
                 connection.Open();
@@ -43,10 +43,8 @@ namespace ProjectCompiler
                 MessageBox.Show($"An unexpected error occurred: {ex.Message}");
                 return null;
             }
-
             return connection;
         }
-
         private void PopulateDataGridView()
         {
             using (var connection = GetConnection())
@@ -60,7 +58,10 @@ namespace ProjectCompiler
                                      "date_inspection AS 'Inspection Date', project_coordinator AS 'Project Coordinator', " +
                                      "project_source AS 'Source of Fund', project_contractor AS 'Contractor', project_encoder AS 'Encoder', " +
                                      "project_id AS 'Id' FROM dmedb.project_tb";
-
+                
+                var adapter = new MySqlDataAdapter(query, connection);
+                var data = new DataTable();
+                adapter.Fill(data);
                 DBViewer.DataBindingComplete += (s, e) =>
                 {
                     var column = DBViewer.Columns["Project Year"];
@@ -74,13 +75,9 @@ namespace ProjectCompiler
                         column2.Visible = true;
                     }
                 };
-                var adapter = new MySqlDataAdapter(query, connection);
-                var data = new DataTable();
-                adapter.Fill(data);
-                DBViewer.DataSource = data;
+                DBViewer.DataSource = data;                
             }
         }
-
         private void UpdatePopulateDataGridView()
         {
             using (var connection = GetConnection())
@@ -95,6 +92,9 @@ namespace ProjectCompiler
                                      "project_remarks AS 'Remarks', project_coordinator AS 'Project Coordinator', project_source AS 'Source of Fund', " +
                                      "project_contractor AS 'Contractor', project_encoder AS 'Encoder', project_id AS 'Id' FROM dmedb.project_tb";
 
+                var adapter = new MySqlDataAdapter(query, connection);
+                var populatedData = new DataTable();
+                adapter.Fill(populatedData);
                 DBViewer.DataBindingComplete += (s, e) =>
                 {
                     var column = DBViewer.Columns["Project Year"];
@@ -108,50 +108,15 @@ namespace ProjectCompiler
                         column2.Visible = false;
                     }
                 };
-                var adapter = new MySqlDataAdapter(query, connection);
-                var populatedData = new DataTable();
-                adapter.Fill(populatedData);
-                DBViewer.DataSource = populatedData;
-
-                // Hide the Encoder column
-                DBViewer.Columns["Encoder"].Visible = false;
+                DBViewer.DataSource = populatedData;                
             }
         }
-
-        private void SetColumnOrderAndVisibility()
+        private void ToggleColumnVisibility(string columnName, bool visible)
         {
-            var desiredOrder = new[]
+            var column = DBViewer.Columns[columnName];
+            if (column != null)
             {
-                "Project Year", "Project/Program/Activity", "Location", "Total Cost", "Approved Budget in Contract (ABC)", "Notice to Proceed",
-                "Date Started", "No. of Calendar Days", "No. of Extension", "Target Completion", "Project Status (%)",
-                "Total Cost Incurred to Date", "Photos", "Inspection Date", "Remarks", "Project Coordinator", "Source of Fund", "Contractor"
-            };
-
-            int newIndex = 0;
-            foreach (var columnName in desiredOrder)
-            {
-                if (DBViewer.Columns.Contains(columnName))
-                {
-                    DBViewer.Columns[columnName].DisplayIndex = newIndex++;
-                }
-            }
-            if (DBViewer.Columns.Contains("Encoder"))
-            {
-                DBViewer.Columns["Encoder"].Visible = false;
-            }
-        }
-
-        private void FilterData(string selectedColumn, string searchText)
-        {
-            // Suspend binding to avoid CurrencyManager issues
-            DBViewer.SuspendLayout();
-            CurrencyManager manager = (CurrencyManager)BindingContext[DBViewer.DataSource];
-            manager.SuspendBinding();
-
-            foreach (DataGridViewRow row in DBViewer.Rows)
-            {
-                row.Visible = string.IsNullOrEmpty(searchText) ||
-                              row.Cells[selectedColumn]?.Value?.ToString().IndexOf(searchText, StringComparison.InvariantCultureIgnoreCase) >= 0;
+                column.Visible = visible;
             }
         }
         private void SearchCB_SelectedIndexChanged(object sender, EventArgs e)
@@ -160,23 +125,61 @@ namespace ProjectCompiler
         }
         private void SearchBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode != Keys.Enter) return;
-
-            string searchText = SearchBox.Text.Trim();
-
-            if (selectedColumnName == "Project Year" && !string.IsNullOrEmpty(searchText) && !int.TryParse(searchText, out _))
+            if (e.KeyCode == Keys.Enter)
             {
-                MessageBox.Show("Invalid year format! Please enter a 4-digit year (e.g., 20XX).");
-                return;
+                string searchText = SearchBox.Text.Trim();
+                if (selectedColumnName == "Project Year" && !IsValidYear(searchText))
+                {
+                    MessageBox.Show("Invalid year format! Please enter a 4-digit year (e.g., 20XX).");
+                    return;
+                }
+                FilterData(selectedColumnName, searchText);
             }
-            FilterData(selectedColumnName, searchText);
+        }
+        private bool IsValidYear(string year)
+        {
+            var yearRegex = new Regex(@"^\d{4}$");
+            return yearRegex.IsMatch(year);
+        }
+        private void FilterData(string columnName, string searchText)
+        {
+            DBViewer.SuspendLayout();
+            var manager = (CurrencyManager)BindingContext[DBViewer.DataSource];
+            manager.SuspendBinding();
+            foreach (DataGridViewRow row in DBViewer.Rows)
+            {
+                row.Visible = string.IsNullOrEmpty(searchText) ||
+                              row.Cells[columnName]?.Value?.ToString()
+                                  .IndexOf(searchText, StringComparison.InvariantCultureIgnoreCase) >= 0;
+            }
+            manager.ResumeBinding();
+            DBViewer.ResumeLayout();
         }
         private void Show_Click(object sender, EventArgs e)
         {
             UpdatePopulateDataGridView();
-            SetColumnOrderAndVisibility();
+            ReorderColumns();
             Show.Visible = false;
             Revert.Visible = true;
+        }
+        private void ReorderColumns()
+        {
+            var desiredOrder = new List<string>
+            {
+                "Project Year", "Project/Program/Activity", "Location", "Total Cost", "Approved Budget in Contract (ABC)",
+                "Notice to Proceed", "Date Started", "No. of Calendar Days", "No. of Extension", "Target Completion Date",
+                "Project Status (%)", "Total Cost Incurred to Date", "Photos", "Inspection Date", "Remarks",
+                "Project Coordinator", "Source of Fund", "Contractor"
+            };
+            int newIndex = 0;
+            foreach (var columnName in desiredOrder)
+            {
+                if (DBViewer.Columns.Contains(columnName))
+                {
+                    DBViewer.Columns[columnName].DisplayIndex = newIndex;
+                    newIndex++;
+                }
+            }
         }
         private void Revert_Click(object sender, EventArgs e)
         {
@@ -184,48 +187,41 @@ namespace ProjectCompiler
             Show.Visible = true;
             Revert.Visible = false;
         }
-
         private void DBViewer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0) return;
-
-            var selectedRow = DBViewer.Rows[e.RowIndex];
-            var form1Instance = GetOrCreateForm1Instance();
-
             try
             {
-                bool loadSuccess = form1Instance.LoadRowData(selectedRow);
+                var selectedRow = DBViewer.Rows[e.RowIndex];
+                PopulateForm1Fields(selectedRow);
+                form1Instance.SetReadOnlyState(true);
                 form1Instance.Show();
-
-                if (loadSuccess)
-                {
-                    form1Instance.BringToFront();  // Bring Form1 to the front only if no error occurs
-                }
+                form1Instance.BringToFront();
                 form1Instance.SetButtonsVisibility(true);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show($"Error loading row data: {ex.Message}");
+                MessageBox.Show("Please click 'Show Full Table' first before transferring data");
             }
         }
-        public void UpdateRow(int rowIndex, string[] newValues)
+        private void PopulateForm1Fields(DataGridViewRow selectedRow)
         {
-            if (rowIndex < 0 || rowIndex >= DBViewer.Rows.Count || newValues.Length != ColumnCount) return;
-
-            for (int i = 0; i < ColumnCount; i++)
-            {
-                DBViewer.Rows[rowIndex].Cells[i].Value = newValues[i];
-            }
-        }
-        private Form1 GetOrCreateForm1Instance()
-        {
-            var form1 = Application.OpenForms.OfType<Form1>().FirstOrDefault();
-            if (form1 == null)
-            {
-                form1 = new Form1();
-                form1.Show();  // Show Form1 if it's not already open
-            }
-            return form1;
+            form1Instance.Encoder = selectedRow.Cells["Encoder"].Value?.ToString() ?? "N/A";
+            form1Instance.Title = selectedRow.Cells["Project/Program/Activity"].Value?.ToString() ?? "N/A";
+            form1Instance.Location = selectedRow.Cells["Location"].Value?.ToString() ?? "N/A";
+            form1Instance.TotalCost = Convert.ToDecimal(selectedRow.Cells["Total Cost"].Value ?? 0);
+            form1Instance.Budget = Convert.ToDecimal(selectedRow.Cells["Approved Budget in Contract (ABC)"].Value ?? 0);
+            form1Instance.Notice = Convert.ToDateTime(selectedRow.Cells["Notice to Proceed"].Value ?? DateTime.Now);
+            form1Instance.Start = Convert.ToDateTime(selectedRow.Cells["Date Started"].Value ?? DateTime.Now);
+            form1Instance.Target = Convert.ToDateTime(selectedRow.Cells["Target Completion Date"].Value ?? DateTime.Now);
+            form1Instance.Calendar = selectedRow.Cells["No. of Calendar Days"].Value?.ToString() ?? "0";
+            form1Instance.Extension = selectedRow.Cells["No. of Extension"].Value?.ToString() ?? "0";
+            form1Instance.Status = Convert.ToInt32(selectedRow.Cells["Project Status (%)"].Value ?? 0);
+            form1Instance.Incurred = Convert.ToDecimal(selectedRow.Cells["Total Cost Incurred to Date"].Value ?? 0);
+            form1Instance.Inspect = Convert.ToDateTime(selectedRow.Cells["Inspection Date"].Value ?? DateTime.Now);
+            form1Instance.Remarks = selectedRow.Cells["Remarks"].Value?.ToString() ?? "N/A";
+            form1Instance.Coordinator = selectedRow.Cells["Project Coordinator"].Value?.ToString() ?? "N/A";
+            form1Instance.Source = selectedRow.Cells["Source of Fund"].Value?.ToString() ?? "N/A";
+            form1Instance.Contractor = selectedRow.Cells["Contractor"].Value?.ToString() ?? "N/A";
         }
     }
 }
