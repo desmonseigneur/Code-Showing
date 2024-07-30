@@ -193,6 +193,7 @@ namespace ProjectCompiler
             {
                 var selectedRow = DBViewer.Rows[e.RowIndex];
 
+                var idb = Convert.ToInt32(selectedRow.Cells["Id"].Value);
                 var title = selectedRow.Cells["Project/Program/Activity"].Value.ToString();
                 var location = selectedRow.Cells["Location"].Value.ToString();
                 var totalCost = Convert.ToDecimal(selectedRow.Cells["Total Cost"].Value);
@@ -217,7 +218,7 @@ namespace ProjectCompiler
                     form1Instance = new Form1();
                 }
 
-                form1Instance.SetProjectData(title, location, totalCost, budget, notice, start, target, calendar, extension, status, incurred, inspect, remarks, coordinator, source, contractor, encoder);
+                form1Instance.SetProjectData(title, location, totalCost, budget, notice, start, target, calendar, extension, status, incurred, inspect, remarks, coordinator, source, contractor, encoder, idb);
 
                 form1Instance.SetReadOnlyState(true);
                 form1Instance.SetButtonsVisibility(true);
