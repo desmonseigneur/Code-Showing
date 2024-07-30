@@ -53,100 +53,6 @@ namespace ProjectCompiler
             [StringLength(50)] public string Remarks { get; set; }
             public int Id { get; set; }
         }
-        // Properties
-        public string Encoder
-        {
-            get => EncoderBox.Text;
-            set => EncoderBox.Text = value;
-        }
-        public string Title
-        {
-            get => NameBox.Text;
-            set => NameBox.Text = value;
-        }
-
-        public string Location
-        {
-            get => LocationCB.Text;
-            set => LocationCB.Text = value;
-        }
-        public string Coordinator
-        {
-            get => PCBox.Text;
-            set => PCBox.Text = value;
-        }
-
-        public string Contractor
-        {
-            get => ConBox.Text;
-            set => ConBox.Text = value;
-        }
-        public string Source
-        {
-            get => SourceBox.Text;
-            set => SourceBox.Text = value;
-        }
-        public decimal TotalCost
-        {
-            get => decimal.Parse(TCBox.Text, NumberStyles.Currency);
-            set => TCBox.Text = value.ToString("0.000");
-        }
-        public decimal Budget
-        {
-            get => decimal.Parse(BudgetBox.Text, NumberStyles.Currency);
-            set => BudgetBox.Text = value.ToString("0.000");
-        }
-        public DateTime Notice
-        {
-            get => NoticeDate.Value;
-            set => NoticeDate.Value = value;
-        }
-        public DateTime Start
-        {
-            get => StartDate.Value;
-            set => StartDate.Value = value;
-        }
-        public DateTime Target
-        {
-            get => TargetDate.Value;
-            set => TargetDate.Value = value;
-        }
-        public string Calendar
-        {
-            get => CalendarBox.Text;
-            set => CalendarBox.Text = value;
-        }
-        public string Extension
-        {
-            get => ExtBox.Text;
-            set => ExtBox.Text = value;
-        }
-        public int Status
-        {
-            get => int.Parse(StatusBox.Text);
-            set => StatusBox.Text = value.ToString();
-        }
-        public decimal Incurred
-        {
-            get => decimal.Parse(IncurredBox.Text, NumberStyles.Currency);
-            set => IncurredBox.Text = value.ToString("0.000");
-        }
-        public DateTime Inspect
-        {
-            get => InspectDate.Value;
-            set => InspectDate.Value = value;
-        }
-        public string Remarks
-        {
-            get => RemarksBox.Text;
-            set => RemarksBox.Text = value;
-        }
-        public int Id
-        {
-            get => int.Parse(StatusBox.Text);
-            set => StatusBox.Text = value.ToString();
-        }
-
         // Methods
         private void ClearAll_Click(object sender, EventArgs e)
         {
@@ -202,7 +108,7 @@ namespace ProjectCompiler
                     await InsertProjectAsync(project);
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 MessageBox.Show($"Please complete filling the form.");
             }
@@ -230,6 +136,8 @@ namespace ProjectCompiler
         }
         private Project GetProjectFromForm()
         {
+            int id = 0;
+            int.TryParse(IDBox.Text, out id);
             return new Project
             {
                 Encoder = EncoderBox.Text,
@@ -248,7 +156,8 @@ namespace ProjectCompiler
                 Status = int.Parse(StatusBox.Text),
                 Incurred = decimal.Parse(IncurredBox.Text, NumberStyles.Currency).ToString("0.000"),
                 Inspect = InspectDate.Value,
-                Remarks = RemarksBox.Text
+                Remarks = RemarksBox.Text,
+                Id = id
             };
         }
         private bool ValidateProject(Project project)
@@ -302,14 +211,14 @@ namespace ProjectCompiler
             {
                 await con.OpenAsync();
                 string query = @"UPDATE project_tb 
-                         SET project_title = @title, project_location = @loc, project_totalcost = @tc, 
-                             project_budget = @budget, date_notice = @notice, date_start = @start, 
-                             date_days = @days, date_extension = @ext, date_target = @target, 
-                             project_status = @status, project_incurred = @incurred, 
-                             date_inspection = @inspect, project_remarks = @remarks, 
-                             project_coordinator = @pc, project_source = @source, 
-                             project_contractor = @con, project_encoder = @enc 
-                         WHERE project_id = @id";
+                 SET project_title = @title, project_location = @loc, project_totalcost = @tc, 
+                     project_budget = @budget, date_notice = @notice, date_start = @start, 
+                     date_days = @days, date_extension = @ext, date_target = @target, 
+                     project_status = @status, project_incurred = @incurred, 
+                     date_inspection = @inspect, project_remarks = @remarks, 
+                     project_coordinator = @pc, project_source = @source, 
+                     project_contractor = @con, project_encoder = @enc 
+                 WHERE project_id = @id";
                 using (var command = new MySqlCommand(query, con))
                 {
                     command.Parameters.AddWithValue("@id", project.Id);
@@ -331,8 +240,8 @@ namespace ProjectCompiler
                     command.Parameters.AddWithValue("@con", project.Contractor);
                     command.Parameters.AddWithValue("@enc", project.Encoder);
 
-                    int rowsAffected = await command.ExecuteNonQueryAsync();
-                    MessageBox.Show($"{rowsAffected} row(s) updated successfully!");
+                    await command.ExecuteNonQueryAsync();
+                    MessageBox.Show($"Project updated successfully!");
                 }
             }
         }
