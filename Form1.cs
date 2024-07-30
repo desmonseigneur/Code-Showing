@@ -141,7 +141,11 @@ namespace ProjectCompiler
             get => RemarksBox.Text;
             set => RemarksBox.Text = value;
         }
-        public int SelectedProjectId { get; set; }
+        public int Id
+        {
+            get => int.Parse(StatusBox.Text);
+            set => StatusBox.Text = value.ToString();
+        }
 
         // Methods
         private void ClearAll_Click(object sender, EventArgs e)
@@ -210,7 +214,6 @@ namespace ProjectCompiler
                 var project = GetProjectFromForm();
                 if (ValidateProject(project))
                 {
-                    MessageBox.Show($"Selected ID: {SelectedProjectId}");
                     await UpdateProjectAsync(project);
                     var form2 = Application.OpenForms.OfType<Form2>().FirstOrDefault();
                 }
@@ -375,7 +378,7 @@ namespace ProjectCompiler
                 CalendarBox.Text = "Invalid Date Format";
             }
         }
-        public void SetProjectData(string title, string location, decimal totalCost, decimal budget, DateTime notice, DateTime start, DateTime target, string calendar, string extension, int status, decimal incurred, DateTime inspect, string remarks, string coordinator, string source, string contractor, string encoder)
+        public void SetProjectData(string title, string location, decimal totalCost, decimal budget, DateTime notice, DateTime start, DateTime target, string calendar, string extension, int status, decimal incurred, DateTime inspect, string remarks, string coordinator, string source, string contractor, string encoder, int id)
         {
             NameBox.Text = title;
             LocationCB.Text = location;
@@ -394,6 +397,7 @@ namespace ProjectCompiler
             SourceBox.Text = source;
             ConBox.Text = contractor;
             EncoderBox.Text = encoder;
+            IDBox.Text = id.ToString();
         }
     }
 }
