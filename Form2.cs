@@ -143,9 +143,24 @@ namespace ProjectCompiler
             Show.Visible = false;
             Revert.Visible = true;
         }
+        public void RefreshDataGridView()
+        {
+            using (var con = GetConnection())
+            {
+                con.Open();
+                string query = "SELECT * FROM project_tb";
+                using (var adapter = new MySqlDataAdapter(query, con))
+                {
+                    var dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+                    DBViewer.DataSource = dataTable;
+                }
+            }
+        }
+
         private void Revert_Click(object sender, EventArgs e)
         {
-            PopulateDataGridView();
+            RefreshDataGridView();
             Show.Visible = true;
             Revert.Visible = false;
         }
