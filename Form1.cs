@@ -27,13 +27,11 @@ namespace ProjectCompiler
             TargetDate.Value = now;
             InspectDate.Value = now;
         }
-        // Method to get database connection
         private MySqlConnection GetConnection()
         {
-            string connectionString = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
-            return new MySqlConnection(connectionString);
+            string connstring = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
+            return new MySqlConnection(connstring);
         }
-        // Project class
         public class Project
         {
             [Required] public string Encoder { get; set; }
@@ -55,94 +53,139 @@ namespace ProjectCompiler
             [StringLength(50)] public string Remarks { get; set; }
             public int Id { get; set; }
         }
-
         // Properties
         public string Encoder
         {
-            get { return EncoderBox.Text; }
-            set { EncoderBox.Text = value; }
+            get => EncoderBox.Text;
+            set => EncoderBox.Text = value;
         }
         public string Title
         {
-            get { return NameBox.Text; }
-            set { NameBox.Text = value; }
+            get => NameBox.Text;
+            set => NameBox.Text = value;
         }
-        public string Loc
+
+        public string Location
         {
-            get { return LocationCB.Text; }
-            set { LocationCB.Text = value; }
+            get => LocationCB.Text;
+            set => LocationCB.Text = value;
         }
         public string Coordinator
         {
-            get { return PCBox.Text; }
-            set { PCBox.Text = value; }
+            get => PCBox.Text;
+            set => PCBox.Text = value;
         }
+
         public string Contractor
         {
-            get { return ConBox.Text; }
-            set { ConBox.Text = value; }
+            get => ConBox.Text;
+            set => ConBox.Text = value;
         }
         public string Source
         {
-            get { return SourceBox.Text; }
-            set { SourceBox.Text = value; }
+            get => SourceBox.Text;
+            set => SourceBox.Text = value;
         }
         public decimal TotalCost
         {
-            get { return decimal.Parse(TCBox.Text); }
-            set { TCBox.Text = value.ToString(); }
+            get => decimal.Parse(TCBox.Text, NumberStyles.Currency);
+            set => TCBox.Text = value.ToString("0.000");
         }
         public decimal Budget
         {
-            get { return decimal.Parse(BudgetBox.Text); }
-            set { BudgetBox.Text = value.ToString(); }
+            get => decimal.Parse(BudgetBox.Text, NumberStyles.Currency);
+            set => BudgetBox.Text = value.ToString("0.000");
         }
         public DateTime Notice
         {
-            get { return NoticeDate.Value; }
-            set { NoticeDate.Value = value; }
+            get => NoticeDate.Value;
+            set => NoticeDate.Value = value;
         }
         public DateTime Start
         {
-            get { return StartDate.Value; }
-            set { StartDate.Value = value; }
+            get => StartDate.Value;
+            set => StartDate.Value = value;
         }
         public DateTime Target
         {
-            get { return TargetDate.Value; }
-            set { TargetDate.Value = value; }
+            get => TargetDate.Value;
+            set => TargetDate.Value = value;
         }
         public string Calendar
         {
-            get { return CalendarBox.Text; }
-            set { CalendarBox.Text = value; }
+            get => CalendarBox.Text;
+            set => CalendarBox.Text = value;
         }
         public string Extension
         {
-            get { return ExtBox.Text; }
-            set { ExtBox.Text = value; }
+            get => ExtBox.Text;
+            set => ExtBox.Text = value;
         }
         public int Status
         {
-            get { return int.Parse(StatusBox.Text); }
-            set { StatusBox.Text = value.ToString(); }
+            get => int.Parse(StatusBox.Text);
+            set => StatusBox.Text = value.ToString();
         }
         public decimal Incurred
         {
-            get { return decimal.Parse(IncurredBox.Text); }
-            set { IncurredBox.Text = value.ToString("0.000"); }
+            get => decimal.Parse(IncurredBox.Text, NumberStyles.Currency);
+            set => IncurredBox.Text = value.ToString("0.000");
         }
         public DateTime Inspect
         {
-            get { return InspectDate.Value; }
-            set { InspectDate.Value = value; }
+            get => InspectDate.Value;
+            set => InspectDate.Value = value;
         }
         public string Remarks
         {
-            get { return RemarksBox.Text; }
-            set { RemarksBox.Text = value; }
+            get => RemarksBox.Text;
+            set => RemarksBox.Text = value;
         }
-        // Button click handlers
+        // Methods
+        private void ClearAll_Click(object sender, EventArgs e)
+        {
+            foreach (Control control in Controls)
+            {
+                switch (control)
+                {
+                    case TextBox textBox:
+                        textBox.Clear();
+                        break;
+                    case ComboBox comboBox:
+                        comboBox.SelectedIndex = -1;
+                        break;
+                }
+            }
+            SetDefaultDates();
+        }
+        public void SetReadOnlyState(bool isReadOnly)
+        {
+            foreach (Control control in Controls)
+            {
+                switch (control)
+                {
+                    case TextBox textBox:
+                        textBox.ReadOnly = isReadOnly;
+                        break;
+                    case ComboBox comboBox:
+                        comboBox.Enabled = !isReadOnly;
+                        break;
+                    case DateTimePicker dateTimePicker:
+                        dateTimePicker.Enabled = !isReadOnly;
+                        break;
+                }
+            }
+        }
+        private void Edit_Click(object sender, EventArgs e)
+        {
+            SetReadOnlyState(!EncoderBox.ReadOnly);
+            Edit.Visible = false;
+        }
+        public void SetButtonsVisibility(bool isVisible)
+        {
+            Edit.Visible = isVisible;
+            Replace.Visible = isVisible;
+        }
         private async void Submit_Click(object sender, EventArgs e)
         {
             try
@@ -153,13 +196,9 @@ namespace ProjectCompiler
                     await InsertProjectAsync(project);
                 }
             }
-            catch (FormatException ex)
-            {
-                MessageBox.Show($"Invalid format: {ex.Message}");
-            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}");
+                MessageBox.Show($"Please complete filling the form.");
             }
         }
         private async void Replace_Click(object sender, EventArgs e)
@@ -171,7 +210,6 @@ namespace ProjectCompiler
                 {
                     await UpdateProjectAsync(project);
                     var form2 = Application.OpenForms.OfType<Form2>().FirstOrDefault();
-                    form2?.RefreshDataGridView();
                 }
             }
             catch (FormatException ex)
@@ -184,44 +222,42 @@ namespace ProjectCompiler
             }
             Replace.Visible = false;
         }
-        private void Edit_Click(object sender, EventArgs e)
+        private Project GetProjectFromForm()
         {
-            SetReadOnlyState(!EncoderBox.ReadOnly);
-            Edit.Visible = false;
-        }
-        private void ClearAll_Click(object sender, EventArgs e)
-        {
-            foreach (Control control in Controls)
+            return new Project
             {
-                if (control is TextBox textBox)
-                {
-                    textBox.Clear();
-                }
-                else if (control is ComboBox comboBox)
-                {
-                    comboBox.SelectedIndex = -1;
-                }
-            }
-            SetDefaultDates();
+                Encoder = EncoderBox.Text,
+                Title = NameBox.Text,
+                Location = LocationCB.Text,
+                Coordinator = PCBox.Text,
+                Contractor = ConBox.Text,
+                Source = SourceBox.Text,
+                TotalCost = decimal.Parse(TCBox.Text, NumberStyles.Currency),
+                Budget = decimal.Parse(BudgetBox.Text, NumberStyles.Currency),
+                Notice = NoticeDate.Value,
+                Start = StartDate.Value,
+                Target = TargetDate.Value,
+                Calendar = CalendarBox.Text,
+                Extension = ExtBox.Text,
+                Status = int.Parse(StatusBox.Text),
+                Incurred = decimal.Parse(IncurredBox.Text, NumberStyles.Currency).ToString("0.000"),
+                Inspect = InspectDate.Value,
+                Remarks = RemarksBox.Text
+            };
         }
-        private void ProjectsList_Click(object sender, EventArgs e)
+        private bool ValidateProject(Project project)
         {
-            Form2 form2 = new Form2(this);
-            form2.Show();
-            form2.BringToFront();
-        }
-        private void StartDate_ValueChanged(object sender, EventArgs e)
-        {
-            UpdateTargetDate();
-        }
-        private void CalendarBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
+            ValidationContext context = new ValidationContext(project);
+            var results = new List<ValidationResult>();
+            if (!Validator.TryValidateObject(project, context, results, true))
             {
-                UpdateTargetDate();
+                var errorMessage = new StringBuilder("Please fix the following errors:\n");
+                results.ForEach(result => errorMessage.AppendLine($"- {result.ErrorMessage}"));
+                MessageBox.Show(errorMessage.ToString(), "Validation Error");
+                return false;
             }
+            return true;
         }
-        // Helper methods
         private async Task InsertProjectAsync(Project project)
         {
             using (var con = GetConnection())
@@ -286,60 +322,22 @@ namespace ProjectCompiler
                 }
             }
         }
-        private bool ValidateProject(Project project)
+        private void ProjectsList_Click(object sender, EventArgs e)
         {
-            // Add validation logic here
-            return true;
+            Form2 form2 = new Form2(this);
+            form2.Show();
+            form2.BringToFront();
         }
-        private Project GetProjectFromForm()
+        private void StartDate_ValueChanged(object sender, EventArgs e)
         {
-            return new Project
+            UpdateTargetDate();
+        }
+        private void CalendarBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
             {
-                Encoder = EncoderBox.Text,
-                Title = NameBox.Text,
-                Location = LocationCB.Text,
-                Coordinator = PCBox.Text,
-                Contractor = ConBox.Text,
-                Source = SourceBox.Text,
-                TotalCost = decimal.Parse(TCBox.Text, NumberStyles.Currency),
-                Budget = decimal.Parse(BudgetBox.Text, NumberStyles.Currency),
-                Notice = NoticeDate.Value,
-                Start = StartDate.Value,
-                Target = TargetDate.Value,
-                Calendar = CalendarBox.Text,
-                Extension = ExtBox.Text,
-                Status = int.Parse(StatusBox.Text),
-                Incurred = decimal.Parse(IncurredBox.Text, NumberStyles.Currency).ToString("0.000"),
-                Inspect = InspectDate.Value,
-                Remarks = RemarksBox.Text
-            };
-        }
-        private void LoadProjectIntoForm(Project project)
-        {
-            EncoderBox.Text = project.Encoder;
-            NameBox.Text = project.Title;
-            LocationCB.Text = project.Location;
-            PCBox.Text = project.Coordinator;
-            ConBox.Text = project.Contractor;
-            SourceBox.Text = project.Source;
-            TCBox.Text = project.TotalCost.ToString("C");
-            BudgetBox.Text = project.Budget.ToString("C");
-            NoticeDate.Value = project.Notice ?? DateTime.Now;
-            StartDate.Value = project.Start ?? DateTime.Now;
-            TargetDate.Value = project.Target ?? DateTime.Now;
-            CalendarBox.Text = project.Calendar;
-            ExtBox.Text = project.Extension;
-            StatusBox.Text = project.Status.ToString();
-            IncurredBox.Text = project.Incurred;
-            InspectDate.Value = project.Inspect ?? DateTime.Now;
-            RemarksBox.Text = project.Remarks;
-            SetReadOnlyState(true);
-            SetButtonsVisibility(true);
-        }
-        private Project GetProjectFromSelectedRow(int rowIndex)
-        {
-            // Extract project details from the selected row and return a Project object
-            return new Project();
+                UpdateTargetDate();
+            }
         }
         private void UpdateTargetDate()
         {
@@ -351,87 +349,19 @@ namespace ProjectCompiler
             }
             try
             {
-                DateTime startDate = DateTime.Parse(StartDate.Text);
-                if (int.TryParse(CalendarBox.Text, out int daysToAdd))
+                if (DateTime.TryParse(StartDate.Text, out DateTime startDate) &&
+                    int.TryParse(CalendarBox.Text, out int daysToAdd))
                 {
                     TargetDate.Value = startDate.AddDays(daysToAdd);
                 }
                 else
                 {
-                    CalendarBox.Text = "Invalid number";
+                    CalendarBox.Text = "Invalid input";
                 }
             }
             catch (FormatException)
             {
                 CalendarBox.Text = "Invalid Date Format";
-            }
-        }
-        public bool LoadRowData(DataGridViewRow row)
-        {
-            if (row == null) throw new ArgumentNullException(nameof(row));
-
-            try
-            {
-                Encoder = row.Cells["Encoder"].Value?.ToString() ?? "N/A";
-                Title = row.Cells["Project/Program/Activity"].Value?.ToString() ?? "N/A";
-                Loc = row.Cells["Location"].Value?.ToString() ?? "N/A";
-                TotalCost = Convert.ToDecimal(row.Cells["Total Cost"].Value ?? 0);
-                Budget = Convert.ToDecimal(row.Cells["Approved Budget in Contract (ABC)"].Value ?? 0);
-                Notice = Convert.ToDateTime(row.Cells["Notice to Proceed"].Value ?? DateTime.Now);
-                Start = Convert.ToDateTime(row.Cells["Date Started"].Value ?? DateTime.Now);
-                Target = Convert.ToDateTime(row.Cells["Target Completion Date"].Value ?? DateTime.Now);
-                Calendar = row.Cells["No. of Calendar Days"].Value?.ToString() ?? "0";
-                Extension = row.Cells["No. of Extension"].Value?.ToString() ?? "0";
-                Status = Convert.ToInt32(row.Cells["Project Status (%)"].Value ?? 0);
-                Incurred = Convert.ToDecimal(row.Cells["Total Cost Incurred to Date"].Value ?? 0);
-                Inspect = Convert.ToDateTime(row.Cells["Inspection Date"].Value ?? DateTime.Now);
-                Remarks = row.Cells["Remarks"].Value?.ToString() ?? "N/A";
-                Coordinator = row.Cells["Project Coordinator"].Value?.ToString() ?? "N/A";
-                Source = row.Cells["Source of Fund"].Value?.ToString() ?? "N/A";
-                Contractor = row.Cells["Contractor"].Value?.ToString() ?? "N/A";
-
-                // Set Form1 controls to read-only after populating them
-                SetReadOnlyState(true);
-                return true; // Indicate success
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Please click 'Show Full Table' first before transferring data.");
-                return false; // Indicate failure
-            }
-        }
-        // Method to set read-only state for controls
-        public void SetReadOnlyState(bool isReadOnly)
-        {
-            foreach (Control control in Controls)
-            {
-                if (control is TextBox textBox)
-                {
-                    textBox.ReadOnly = isReadOnly;
-                }
-                else if (control is ComboBox comboBox)
-                {
-                    comboBox.Enabled = !isReadOnly;
-                }
-                else if (control is DateTimePicker dateTimePicker)
-                {
-                    dateTimePicker.Enabled = !isReadOnly;
-                }
-            }
-        }
-        // Method to set button visibility
-        public void SetButtonsVisibility(bool isVisible)
-        {
-            Edit.Visible = isVisible;
-            Replace.Visible = isVisible;
-        }
-        // Method to handle cell double-click event in DBViewer
-        private void DBViewer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                var selectedProject = GetProjectFromSelectedRow(e.RowIndex);
-                LoadProjectIntoForm(selectedProject);
             }
         }
     }
