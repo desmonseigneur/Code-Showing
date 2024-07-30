@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ProjectCompiler
 {
@@ -17,47 +16,47 @@ namespace ProjectCompiler
         public Form1()
         {
             InitializeComponent();
-            NoticeDate.Value = DateTime.Now;
-            StartDate.Value = DateTime.Now;
-            TargetDate.Value = DateTime.Now;
-            InspectDate.Value = DateTime.Now;
+            SetDefaultDates();
         }
+        // Method to set default dates
+        private void SetDefaultDates()
+        {
+            DateTime now = DateTime.Now;
+            NoticeDate.Value = now;
+            StartDate.Value = now;
+            TargetDate.Value = now;
+            InspectDate.Value = now;
+        }
+        // Method to get database connection
         private MySqlConnection GetConnection()
         {
             string connstring = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
             return new MySqlConnection(connstring);
         }
+        // Project class
         public class Project
         {
-            [Required]
-            public string Encoder { get; set; }
-            [Required]
-            public string Title { get; set; }
-            [Required]
-            public string Location { get; set; }
-            [Required]
-            public string Coordinator { get; set; }
-            [Required]
-            public string Contractor { get; set; }
-            [Required]
-            public string Source { get; set; }
+            [Required] public string Encoder { get; set; }
+            [Required] public string Title { get; set; }
+            [Required] public string Location { get; set; }
+            [Required] public string Coordinator { get; set; }
+            [Required] public string Contractor { get; set; }
+            [Required] public string Source { get; set; }
             public decimal TotalCost { get; set; }
             public decimal Budget { get; set; }
             public DateTime? Notice { get; set; }
             public DateTime? Start { get; set; }
             public DateTime? Target { get; set; }
-            [StringLength(50)]
-            public string Calendar { get; set; }
-            [StringLength(50)]
-            public string Extension { get; set; }
+            [StringLength(50)] public string Calendar { get; set; }
+            [StringLength(50)] public string Extension { get; set; }
             public int Status { get; set; }
-            [StringLength(50)]
-            public string Incurred { get; set; }
+            [StringLength(50)] public string Incurred { get; set; }
             public DateTime? Inspect { get; set; }
-            [StringLength(50)]
-            public string Remarks { get; set; }
+            [StringLength(50)] public string Remarks { get; set; }
             public int Id { get; set; }
         }
+
+        // Properties
         public string Encoder
         {
             get { return EncoderBox.Text; }
@@ -68,7 +67,7 @@ namespace ProjectCompiler
             get { return NameBox.Text; }
             set { NameBox.Text = value; }
         }
-        public string Location
+        public string Loc
         {
             get { return LocationCB.Text; }
             set { LocationCB.Text = value; }
@@ -143,252 +142,204 @@ namespace ProjectCompiler
             get { return RemarksBox.Text; }
             set { RemarksBox.Text = value; }
         }
-        private void ClearAll_Click(object sender, EventArgs e)
-        {
-            EncoderBox.Text = "";
-            NameBox.Text = "";
-            LocationCB.Text = "";
-            PCBox.Text = "";
-            ConBox.Text = "";
-            SourceBox.Text = "";
-            TCBox.Text = "";
-            BudgetBox.Text = "";
-            CalendarBox.Text = "";
-            ExtBox.Text = "";
-            StatusBox.Text = "";
-            IncurredBox.Text = "";
-            RemarksBox.Text = "";
-
-            NoticeDate.Value = DateTime.Now;
-            StartDate.Value = DateTime.Now;
-            TargetDate.Value = DateTime.Now;
-            InspectDate.Value = DateTime.Now;
-        }
-        public void SetReadOnlyState(bool isReadOnly)
-        {
-            EncoderBox.ReadOnly = isReadOnly;
-            NameBox.ReadOnly = isReadOnly;
-            LocationCB.Enabled = !isReadOnly; // ComboBox doesn't have ReadOnly property
-            PCBox.ReadOnly = isReadOnly;
-            ConBox.ReadOnly = isReadOnly;
-            SourceBox.ReadOnly = isReadOnly;
-            TCBox.ReadOnly = isReadOnly;
-            BudgetBox.ReadOnly = isReadOnly;
-            NoticeDate.Enabled = !isReadOnly; // DateTimePicker doesn't have ReadOnly property
-            StartDate.Enabled = !isReadOnly;
-            CalendarBox.ReadOnly = isReadOnly;
-            ExtBox.ReadOnly = isReadOnly;
-            StatusBox.ReadOnly = isReadOnly;
-            IncurredBox.ReadOnly = isReadOnly;
-            InspectDate.Enabled = !isReadOnly;
-            RemarksBox.ReadOnly = isReadOnly;
-        }
-        private void Edit_Click(object sender, EventArgs e)
-        {
-            // Toggle read-only state
-            bool isReadOnly = !EncoderBox.ReadOnly;
-            SetReadOnlyState(isReadOnly);
-            Edit.Visible = false;
-        }
-        public void SetButtonsVisibility(bool isVisible)
-        {
-            Edit.Visible = isVisible;
-            Replace.Visible = isVisible;
-        }
+        // Button click handlers
         private async void Submit_Click(object sender, EventArgs e)
         {
             try
             {
-                Project project = new Project
-                {
-                    Encoder = EncoderBox.Text,
-                    Title = NameBox.Text,
-                    Location = LocationCB.Text,
-                    Coordinator = PCBox.Text,
-                    Contractor = ConBox.Text,
-                    Source = SourceBox.Text,
-                    TotalCost = decimal.Parse(TCBox.Text, System.Globalization.NumberStyles.Currency),
-                    Budget = decimal.Parse(BudgetBox.Text, System.Globalization.NumberStyles.Currency),
-                    Notice = NoticeDate.Value,
-                    Start = StartDate.Value,
-                    Target = TargetDate.Value,
-                    Calendar = CalendarBox.Text,
-                    Extension = ExtBox.Text,
-                    Status = Convert.ToInt32(StatusBox.Text),
-                    Incurred = decimal.Parse(IncurredBox.Text, System.Globalization.NumberStyles.Currency).ToString("0.000"),
-                    Inspect = InspectDate.Value,
-                    Remarks = RemarksBox.Text
-                };
-
+                var project = GetProjectFromForm();
                 if (ValidateProject(project))
                 {
                     await InsertProjectAsync(project);
                 }
             }
+            catch (FormatException ex)
+            {
+                MessageBox.Show($"Invalid format: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Please fill the form. Error: {ex.Message}");
+                MessageBox.Show($"Error: {ex.Message}");
             }
         }
-
         private async void Replace_Click(object sender, EventArgs e)
         {
             try
             {
-                Project project = new Project
-                {
-                    Encoder = EncoderBox.Text,
-                    Title = NameBox.Text,
-                    Location = LocationCB.Text,
-                    Coordinator = PCBox.Text,
-                    Contractor = ConBox.Text,
-                    Source = SourceBox.Text,
-                    TotalCost = decimal.Parse(TCBox.Text, System.Globalization.NumberStyles.Currency),
-                    Budget = decimal.Parse(BudgetBox.Text, System.Globalization.NumberStyles.Currency),
-                    Notice = NoticeDate.Value,
-                    Start = StartDate.Value,
-                    Target = TargetDate.Value,
-                    Calendar = CalendarBox.Text,
-                    Extension = ExtBox.Text,
-                    Status = Convert.ToInt32(StatusBox.Text),
-                    Incurred = decimal.Parse(IncurredBox.Text, System.Globalization.NumberStyles.Currency).ToString("0.000"),
-                    Inspect = InspectDate.Value,
-                    Remarks = RemarksBox.Text
-                };
-
+                var project = GetProjectFromForm();
                 if (ValidateProject(project))
                 {
-                    await UpdateProjectAsync(project);
+                    await UpdateProjectAsync(project); // Await the async method
                 }
+            }
+            catch (FormatException ex)
+            {
+                MessageBox.Show($"Invalid format: {ex.Message}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating project: {ex.Message}");
+                MessageBox.Show($"Error: {ex.Message}");
             }
             Replace.Visible = false;
         }
-        private bool ValidateProject(Project project)
+        private void Edit_Click(object sender, EventArgs e)
         {
-            ValidationContext context = new ValidationContext(project);
-            List<ValidationResult> results = new List<ValidationResult>();
-            Validator.TryValidateObject(project, context, results, true);
-
-            if (results.Count > 0)
-            {
-                StringBuilder errorMessage = new StringBuilder("Please fix the following errors:\n");
-                results.ForEach(result => errorMessage.AppendLine($"- {result.ErrorMessage}"));
-                MessageBox.Show(errorMessage.ToString(), "Validation Error");
-                return false;
-            }
-            return true;
+            SetReadOnlyState(!EncoderBox.ReadOnly);
+            Edit.Visible = false;
         }
-        private async Task InsertProjectAsync(Project project)
+
+        private void ClearAll_Click(object sender, EventArgs e)
         {
-            int currentYear = DateTime.Now.Year;
-            using (MySqlConnection con = GetConnection())
+            foreach (Control control in Controls)
             {
-                await con.OpenAsync();
-                string query = "INSERT INTO project_tb (project_year, project_title, project_location, project_totalcost, project_budget, date_notice, date_start, date_days, date_extension, date_target, project_status, project_incurred, date_inspection, project_remarks, project_coordinator, project_source, project_contractor, project_encoder) VALUES (@year, @title, @loc, @tc, @budget, @notice, @start, @days, @ext, @target, @status, @incurred, @inspect, @remarks, @pc, @source, @con, @enc)";
-                MySqlCommand command = new MySqlCommand(query, con);
-
-                command.Parameters.AddWithValue("@year", currentYear);
-                command.Parameters.AddWithValue("@title", project.Title);
-                command.Parameters.AddWithValue("@loc", project.Location);
-                command.Parameters.AddWithValue("@tc", project.TotalCost);
-                command.Parameters.AddWithValue("@budget", project.Budget);
-                command.Parameters.AddWithValue("@notice", project.Notice);
-                command.Parameters.AddWithValue("@start", project.Start);
-                command.Parameters.AddWithValue("@days", project.Calendar);
-                command.Parameters.AddWithValue("@ext", project.Extension);
-                command.Parameters.AddWithValue("@target", project.Target);
-                command.Parameters.AddWithValue("@status", project.Status);
-                command.Parameters.AddWithValue("@incurred", project.Incurred);
-                command.Parameters.AddWithValue("@inspect", project.Inspect);
-                command.Parameters.AddWithValue("@remarks", project.Remarks);
-                command.Parameters.AddWithValue("@pc", project.Coordinator);
-                command.Parameters.AddWithValue("@source", project.Source);
-                command.Parameters.AddWithValue("@con", project.Contractor);
-                command.Parameters.AddWithValue("@enc", project.Encoder);
-
-                try
+                if (control is TextBox textBox)
                 {
-                    await command.ExecuteNonQueryAsync();
-                    MessageBox.Show("Project submitted successfully!");
+                    textBox.Clear();
                 }
-                catch (Exception ex)
+                else if (control is ComboBox comboBox)
                 {
-                    MessageBox.Show($"Error in submitting project: {ex.Message}");
+                    comboBox.SelectedIndex = -1;
                 }
             }
-        }
-        private async Task UpdateProjectAsync(Project project)
-        {
-            using (MySqlConnection con = GetConnection())
-            {
-                await con.OpenAsync();
-                string query = "UPDATE project_tb SET project_title = @title, project_location = @loc, project_totalcost = @tc, project_budget = @budget, date_notice = @notice, date_start = @start, date_days = @days, date_extension = @ext, date_target = @target, project_status = @status, project_incurred = @incurred, date_inspection = @inspect, project_remarks = @remarks, project_coordinator = @pc, project_source = @source, project_contractor = @con, project_encoder = @enc WHERE project_id = @id";
-                MySqlCommand command = new MySqlCommand(query, con);
-
-                command.Parameters.AddWithValue("@id", project.Id);
-                command.Parameters.AddWithValue("@title", project.Title);
-                command.Parameters.AddWithValue("@loc", project.Location);
-                command.Parameters.AddWithValue("@tc", project.TotalCost);
-                command.Parameters.AddWithValue("@budget", project.Budget);
-                command.Parameters.AddWithValue("@notice", project.Notice);
-                command.Parameters.AddWithValue("@start", project.Start);
-                command.Parameters.AddWithValue("@days", project.Calendar);
-                command.Parameters.AddWithValue("@ext", project.Extension);
-                command.Parameters.AddWithValue("@target", project.Target);
-                command.Parameters.AddWithValue("@status", project.Status);
-                command.Parameters.AddWithValue("@incurred", project.Incurred);
-                command.Parameters.AddWithValue("@inspect", project.Inspect);
-                command.Parameters.AddWithValue("@remarks", project.Remarks);
-                command.Parameters.AddWithValue("@pc", project.Coordinator);
-                command.Parameters.AddWithValue("@source", project.Source);
-                command.Parameters.AddWithValue("@con", project.Contractor);
-                command.Parameters.AddWithValue("@enc", project.Encoder);
-
-                try
-                {
-                    int rowsAffected = await command.ExecuteNonQueryAsync();
-                    MessageBox.Show($"{rowsAffected} row(s) updated successfully!");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error updating project: {ex.Message}");
-                }
-            }
+            SetDefaultDates();
         }
         private void ProjectsList_Click(object sender, EventArgs e)
         {
-            using (Form3 loginForm = new Form3())
-            {
-                if (loginForm.ShowDialog() == DialogResult.OK)
-                {
-                    if (form2Instance == null)
-                    {
-                        form2Instance = new Form2(this);
-                        form2Instance.FormClosed += (s, args) => form2Instance = null;
-                    }
-                    form2Instance.Show();
-                    form2Instance.BringToFront();
-                }
-                else
-                {
-                    MessageBox.Show("Login failed. Please try again.");
-                }
-            }
+            form2Instance = new Form2(this);
+            form2Instance.ShowDialog();
         }
+
         private void StartDate_ValueChanged(object sender, EventArgs e)
         {
             UpdateTargetDate();
         }
+
         private void CalendarBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
                 UpdateTargetDate();
             }
+        }
+        // Helper methods
+        private async Task InsertProjectAsync(Project project)
+        {
+            using (var con = GetConnection())
+            {
+                await con.OpenAsync();
+                string query = "INSERT INTO project_tb (project_year, project_title, project_location, project_totalcost, project_budget, date_notice, date_start, date_days, date_extension, date_target, project_status, project_incurred, date_inspection, project_remarks, project_coordinator, project_source, project_contractor, project_encoder) VALUES (@year, @title, @loc, @tc, @budget, @notice, @start, @days, @ext, @target, @status, @incurred, @inspect, @remarks, @pc, @source, @con, @enc)";
+                using (var command = new MySqlCommand(query, con))
+                {
+                    command.Parameters.AddWithValue("@year", DateTime.Now.Year);
+                    command.Parameters.AddWithValue("@title", project.Title);
+                    command.Parameters.AddWithValue("@loc", project.Location);
+                    command.Parameters.AddWithValue("@tc", project.TotalCost);
+                    command.Parameters.AddWithValue("@budget", project.Budget);
+                    command.Parameters.AddWithValue("@notice", project.Notice);
+                    command.Parameters.AddWithValue("@start", project.Start);
+                    command.Parameters.AddWithValue("@days", project.Calendar);
+                    command.Parameters.AddWithValue("@ext", project.Extension);
+                    command.Parameters.AddWithValue("@target", project.Target);
+                    command.Parameters.AddWithValue("@status", project.Status);
+                    command.Parameters.AddWithValue("@incurred", project.Incurred);
+                    command.Parameters.AddWithValue("@inspect", project.Inspect);
+                    command.Parameters.AddWithValue("@remarks", project.Remarks);
+                    command.Parameters.AddWithValue("@pc", project.Coordinator);
+                    command.Parameters.AddWithValue("@source", project.Source);
+                    command.Parameters.AddWithValue("@con", project.Contractor);
+                    command.Parameters.AddWithValue("@enc", project.Encoder);
+
+                    await command.ExecuteNonQueryAsync();
+                    MessageBox.Show("Project submitted successfully!");
+                }
+            }
+        }
+        private async Task UpdateProjectAsync(Project project)
+        {
+            using (var con = GetConnection())
+            {
+                await con.OpenAsync();
+                string query = "UPDATE project_tb SET project_title = @title, project_location = @loc, project_totalcost = @tc, project_budget = @budget, date_notice = @notice, date_start = @start, date_days = @days, date_extension = @ext, date_target = @target, project_status = @status, project_incurred = @incurred, date_inspection = @inspect, project_remarks = @remarks, project_coordinator = @pc, project_source = @source, project_contractor = @con, project_encoder = @enc WHERE project_id = @id";
+                using (var command = new MySqlCommand(query, con))
+                {
+                    command.Parameters.AddWithValue("@id", project.Id);
+                    command.Parameters.AddWithValue("@title", project.Title);
+                    command.Parameters.AddWithValue("@loc", project.Location);
+                    command.Parameters.AddWithValue("@tc", project.TotalCost);
+                    command.Parameters.AddWithValue("@budget", project.Budget);
+                    command.Parameters.AddWithValue("@notice", project.Notice);
+                    command.Parameters.AddWithValue("@start", project.Start);
+                    command.Parameters.AddWithValue("@days", project.Calendar);
+                    command.Parameters.AddWithValue("@ext", project.Extension);
+                    command.Parameters.AddWithValue("@target", project.Target);
+                    command.Parameters.AddWithValue("@status", project.Status);
+                    command.Parameters.AddWithValue("@incurred", project.Incurred);
+                    command.Parameters.AddWithValue("@inspect", project.Inspect);
+                    command.Parameters.AddWithValue("@remarks", project.Remarks);
+                    command.Parameters.AddWithValue("@pc", project.Coordinator);
+                    command.Parameters.AddWithValue("@source", project.Source);
+                    command.Parameters.AddWithValue("@con", project.Contractor);
+                    command.Parameters.AddWithValue("@enc", project.Encoder);
+
+                    await command.ExecuteNonQueryAsync();
+                    MessageBox.Show("Project updated successfully!");
+                }
+            }
+        }
+        private bool ValidateProject(Project project)
+        {
+            // Add validation logic here
+            return true;
+        }
+        private Project GetProjectFromForm()
+        {
+            return new Project
+            {
+                Encoder = EncoderBox.Text,
+                Title = NameBox.Text,
+                Location = LocationCB.Text,
+                Coordinator = PCBox.Text,
+                Contractor = ConBox.Text,
+                Source = SourceBox.Text,
+                TotalCost = decimal.Parse(TCBox.Text, NumberStyles.Currency),
+                Budget = decimal.Parse(BudgetBox.Text, NumberStyles.Currency),
+                Notice = NoticeDate.Value,
+                Start = StartDate.Value,
+                Target = TargetDate.Value,
+                Calendar = CalendarBox.Text,
+                Extension = ExtBox.Text,
+                Status = int.Parse(StatusBox.Text),
+                Incurred = decimal.Parse(IncurredBox.Text, NumberStyles.Currency).ToString("0.000"),
+                Inspect = InspectDate.Value,
+                Remarks = RemarksBox.Text
+            };
+        }
+        private void LoadProjectIntoForm(Project project)
+        {
+            EncoderBox.Text = project.Encoder;
+            NameBox.Text = project.Title;
+            LocationCB.Text = project.Location;
+            PCBox.Text = project.Coordinator;
+            ConBox.Text = project.Contractor;
+            SourceBox.Text = project.Source;
+            TCBox.Text = project.TotalCost.ToString("C");
+            BudgetBox.Text = project.Budget.ToString("C");
+            NoticeDate.Value = project.Notice ?? DateTime.Now;
+            StartDate.Value = project.Start ?? DateTime.Now;
+            TargetDate.Value = project.Target ?? DateTime.Now;
+            CalendarBox.Text = project.Calendar;
+            ExtBox.Text = project.Extension;
+            StatusBox.Text = project.Status.ToString();
+            IncurredBox.Text = project.Incurred;
+            InspectDate.Value = project.Inspect ?? DateTime.Now;
+            RemarksBox.Text = project.Remarks;
+            SetReadOnlyState(true);
+            SetButtonsVisibility(true);
+        }
+        private Project GetProjectFromSelectedRow(int rowIndex)
+        {
+            // Extract project details from the selected row and return a Project object
+            return new Project();
         }
         private void UpdateTargetDate()
         {
@@ -398,7 +349,6 @@ namespace ProjectCompiler
                 TargetDate.Value = DateTime.Now;
                 return;
             }
-
             try
             {
                 DateTime startDate = DateTime.Parse(StartDate.Text);
@@ -415,6 +365,73 @@ namespace ProjectCompiler
             {
                 CalendarBox.Text = "Invalid Date Format";
             }
-        }        
+        }
+        public void LoadRowData(DataGridViewRow row)
+        {
+            try
+            {
+                Encoder = row.Cells["Encoder"].Value?.ToString() ?? "N/A";
+                Title = row.Cells["Project/Program/Activity"].Value?.ToString() ?? "N/A";
+                Loc = row.Cells["Location"].Value?.ToString() ?? "N/A";
+                TotalCost = Convert.ToDecimal(row.Cells["Total Cost"].Value ?? 0);
+                Budget = Convert.ToDecimal(row.Cells["Approved Budget in Contract (ABC)"].Value ?? 0);
+                Notice = Convert.ToDateTime(row.Cells["Notice to Proceed"].Value ?? DateTime.Now);
+                Start = Convert.ToDateTime(row.Cells["Date Started"].Value ?? DateTime.Now);
+                Target = Convert.ToDateTime(row.Cells["Target Completion Date"].Value ?? DateTime.Now);
+                Calendar = row.Cells["No. of Calendar Days"].Value?.ToString() ?? "0";
+                Extension = row.Cells["No. of Extension"].Value?.ToString() ?? "0";
+                Status = Convert.ToInt32(row.Cells["Project Status (%)"].Value ?? 0);
+                Incurred = Convert.ToDecimal(row.Cells["Total Cost Incurred to Date"].Value ?? 0);
+                Inspect = Convert.ToDateTime(row.Cells["Inspection Date"].Value ?? DateTime.Now);
+                Remarks = row.Cells["Remarks"].Value?.ToString() ?? "N/A";
+                Coordinator = row.Cells["Project Coordinator"].Value?.ToString() ?? "N/A";
+                Source = row.Cells["Source of Fund"].Value?.ToString() ?? "N/A";
+                Contractor = row.Cells["Contractor"].Value?.ToString() ?? "N/A";
+
+                // Set Form1 controls to read-only after populating them
+                SetReadOnlyState(true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Please click 'Show Full Table' first before transferring data.");
+            }
+        }
+        // Method to set read-only state for controls
+        public void SetReadOnlyState(bool isReadOnly)
+        {
+            foreach (Control control in Controls)
+            {
+                if (control is TextBox textBox)
+                {
+                    textBox.ReadOnly = isReadOnly;
+                }
+                else if (control is ComboBox comboBox)
+                {
+                    comboBox.Enabled = !isReadOnly;
+                }
+                else if (control is DateTimePicker dateTimePicker)
+                {
+                    dateTimePicker.Enabled = !isReadOnly;
+                }
+            }
+        }
+
+        // Method to set button visibility
+        public void SetButtonsVisibility(bool isVisible)
+        {
+            Edit.Visible = isVisible;
+            Replace.Visible = isVisible;
+        }
+
+        // Method to handle cell double-click event in DBViewer
+        private void DBViewer_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                var selectedProject = GetProjectFromSelectedRow(e.RowIndex);
+                LoadProjectIntoForm(selectedProject);
+            }
+        }
     }
+
 }
