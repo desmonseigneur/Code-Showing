@@ -184,7 +184,7 @@ namespace ProjectCompiler
         public void SetButtonsVisibility(bool isVisible)
         {
             Edit.Visible = isVisible;
-            Replace.Visible = isVisible;
+            Update.Visible = isVisible;
         }
         private async void Submit_Click(object sender, EventArgs e)
         {
@@ -201,7 +201,7 @@ namespace ProjectCompiler
                 MessageBox.Show($"Please complete filling the form.");
             }
         }
-        private async void Replace_Click(object sender, EventArgs e)
+        private async void Update_Click(object sender, EventArgs e)
         {
             try
             {
@@ -220,7 +220,7 @@ namespace ProjectCompiler
             {
                 MessageBox.Show($"Error: {ex.Message}");
             }
-            Replace.Visible = false;
+            Update.Visible = false;
         }
         private Project GetProjectFromForm()
         {
