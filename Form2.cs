@@ -192,6 +192,8 @@ namespace ProjectCompiler
             try
             {
                 var selectedRow = DBViewer.Rows[e.RowIndex];
+                var selectedId = selectedRow.Cells["Id"].Value;
+                MessageBox.Show($"Selected ID: {selectedId}");
                 PopulateForm1Fields(selectedRow);
                 form1Instance.SetReadOnlyState(true);
                 form1Instance.Show();
