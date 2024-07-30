@@ -111,14 +111,6 @@ namespace ProjectCompiler
                 DBViewer.DataSource = populatedData;                
             }
         }
-        private void ToggleColumnVisibility(string columnName, bool visible)
-        {
-            var column = DBViewer.Columns[columnName];
-            if (column != null)
-            {
-                column.Visible = visible;
-            }
-        }
         private void SearchCB_SelectedIndexChanged(object sender, EventArgs e)
         {
             selectedColumnName = SearchCB.SelectedItem.ToString();
