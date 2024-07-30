@@ -205,8 +205,9 @@ namespace ProjectCompiler
         }
         private void ProjectsList_Click(object sender, EventArgs e)
         {
-            form2Instance = new Form2(this);
-            form2Instance.ShowDialog();
+            Form2 form2 = new Form2(this);
+            form2.Show();
+            form2.BringToFront();
         }
 
         private void StartDate_ValueChanged(object sender, EventArgs e)
