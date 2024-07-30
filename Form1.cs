@@ -30,8 +30,8 @@ namespace ProjectCompiler
         // Method to get database connection
         private MySqlConnection GetConnection()
         {
-            string connstring = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
-            return new MySqlConnection(connstring);
+            string connectionString = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
+            return new MySqlConnection(connectionString);
         }
         // Project class
         public class Project
@@ -169,7 +169,9 @@ namespace ProjectCompiler
                 var project = GetProjectFromForm();
                 if (ValidateProject(project))
                 {
-                    await UpdateProjectAsync(project); // Await the async method
+                    await UpdateProjectAsync(project);
+                    var form2 = Application.OpenForms.OfType<Form2>().FirstOrDefault();
+                    form2?.RefreshDataGridView();
                 }
             }
             catch (FormatException ex)
