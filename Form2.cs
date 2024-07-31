@@ -215,6 +215,7 @@ namespace ProjectCompiler
                 form1Instance.SetProjectData(title, location, totalCost, budget, notice, start, target, calendar, extension, status, incurred, inspect, remarks, coordinator, source, contractor, encoder, idb);
 
                 form1Instance.SetReadOnlyState(true);
+                form1Instance.LastCreatedFolderPath = selectedRow.Cells["FolderPath"].Value?.ToString(); // Load existing folder path if any
                 form1Instance.SetButtonsVisibility(true);
                 form1Instance.Show();
                 form1Instance.BringToFront();
