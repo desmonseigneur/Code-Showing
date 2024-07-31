@@ -260,13 +260,14 @@ namespace ProjectCompiler
                 }
             }
 
-            // Save the workbook
-            string savePath = Path.Combine(exePath, "SavedDocument.xlsx");
+            // Save the workbook in the Downloads folder under "This PC"
+            string downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            string savePath = Path.Combine(downloadsPath, "SavedDocument.xlsx");
             workbook.SaveAs(savePath);
             workbook.Close();
             excelApp.Quit();
 
-            MessageBox.Show("Data transferred to Excel successfully.");
+            MessageBox.Show("Data transferred to Excel successfully and saved in Downloads.");
         }
     }
 }
