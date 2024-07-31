@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,6 +53,7 @@ namespace ProjectCompiler
             public DateTime? Inspect { get; set; }
             [StringLength(50)] public string Remarks { get; set; }
             public int Id { get; set; }
+            public string LastCreatedFolderPath { get; set; }
         }
         // Methods
         private void ClearAll_Click(object sender, EventArgs e)
@@ -308,5 +310,73 @@ namespace ProjectCompiler
             EncoderBox.Text = encoder;
             IDBox.Text = id.ToString();
         }
-    }
+        public void SaveFolderPath(int id, string folderPath)
+        {
+            // Assume `id` uniquely identifies the row in `DBViewer`
+            Form2 form2Instance = Application.OpenForms.OfType<Form2>().FirstOrDefault();
+            if (form2Instance != null)
+            {
+                foreach (DataGridViewRow row in form2Instance.DBViewer.Rows)
+                {
+                    if (Convert.ToInt32(row.Cells["Id"].Value) == id)
+                    {
+                        row.Cells["FolderPath"].Value = folderPath;
+                        break;
+                    }
+                }
+            }
+        }
+        private void Upload_Click(object sender, EventArgs e)
+        {
+            // Get the path to the Documents folder under 'This PC'
+            string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+            // Find the next available folder number
+            int folderNumber = 1;
+            string newFolderPath;
+            do
+            {
+                newFolderPath = Path.Combine(documentsPath, folderNumber.ToString());
+                folderNumber++;
+            } while (Directory.Exists(newFolderPath));
+
+            // Create the new folder
+            Directory.CreateDirectory(newFolderPath);
+
+            // Store the folder path in Form2's DBViewer
+            SaveFolderPath(idb, lastCreatedFolderPath);
+
+            // Open a dialog to select multiple image files
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Multiselect = true;
+                openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Copy selected files to the new folder
+                    foreach (string filePath in openFileDialog.FileNames)
+                    {
+                        string fileName = Path.GetFileName(filePath);
+                        string destinationPath = Path.Combine(newFolderPath, fileName);
+                        File.Copy(filePath, destinationPath);
+                    }
+
+                    MessageBox.Show("Images uploaded successfully.");
+                }
+            }
+        }
+        private string lastCreatedFolderPath;
+        private void Open_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(lastCreatedFolderPath) && Directory.Exists(lastCreatedFolderPath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", lastCreatedFolderPath);
+            }
+            else
+            {
+                MessageBox.Show("No folder to open. Please upload images first.");
+            }
+        }
+    }    
 }
