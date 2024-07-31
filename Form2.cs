@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Printing;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -221,6 +223,50 @@ namespace ProjectCompiler
             {
                 MessageBox.Show($"Error: {ex.Message}");
             }
+        }
+
+        private void Transfer_Click(object sender, EventArgs e)
+        {
+            var excelApp = new Microsoft.Office.Interop.Excel.Application();
+            excelApp.Visible = false;
+
+            // Get the path to the executable directory
+            string exePath = AppDomain.CurrentDomain.BaseDirectory;
+            string templatePath = Path.Combine(exePath, "Document.xlsx");
+
+            var workbook = excelApp.Workbooks.Open(templatePath);
+            var worksheet = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Sheets[1];
+
+            // Start at row 3
+            int startRow = 3;
+            int excelColumnIndex = 1;
+
+            // Transfer data from DBViewer to Excel, skipping 'Id' and 'Encoder' columns
+            for (int j = 0; j < DBViewer.Columns.Count; j++)
+            {
+                if (DBViewer.Columns[j].Name != "Id" && DBViewer.Columns[j].Name != "Encoder")
+                {
+                    worksheet.Cells[startRow - 1, excelColumnIndex] = DBViewer.Columns[j].HeaderText; // Set headers on row 2 (one row above data)
+                    int excelRowIndex = startRow; // Start data on row 3
+                    foreach (DataGridViewRow row in DBViewer.Rows)
+                    {
+                        if (row.Visible)
+                        {
+                            worksheet.Cells[excelRowIndex, excelColumnIndex] = row.Cells[j].Value?.ToString();
+                            excelRowIndex++;
+                        }
+                    }
+                    excelColumnIndex++;
+                }
+            }
+
+            // Save the workbook
+            string savePath = Path.Combine(exePath, "SavedDocument.xlsx");
+            workbook.SaveAs(savePath);
+            workbook.Close();
+            excelApp.Quit();
+
+            MessageBox.Show("Data transferred to Excel successfully.");
         }
     }
 }
