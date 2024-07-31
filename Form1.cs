@@ -312,7 +312,6 @@ namespace ProjectCompiler
         }
         public void SaveFolderPath(int id, string folderPath)
         {
-            // Assume `id` uniquely identifies the row in `DBViewer`
             Form2 form2Instance = Application.OpenForms.OfType<Form2>().FirstOrDefault();
             if (form2Instance != null)
             {
@@ -344,7 +343,7 @@ namespace ProjectCompiler
             Directory.CreateDirectory(newFolderPath);
 
             // Store the folder path in Form2's DBViewer
-            SaveFolderPath(idb, lastCreatedFolderPath);
+            SaveFolderPath(id, lastCreatedFolderPath);
 
             // Open a dialog to select multiple image files
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
