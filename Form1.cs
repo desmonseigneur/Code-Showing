@@ -30,7 +30,7 @@ namespace ProjectCompiler
         }
         private MySqlConnection GetConnection()
         {
-            string connstring = "server=localhost;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
+            string connstring = "server=0.0.0.0;port=3306;database=dmedb;uid=root;password=Edelwe!ss00;";
             return new MySqlConnection(connstring);
         }
         public class Project
@@ -53,7 +53,6 @@ namespace ProjectCompiler
             public DateTime? Inspect { get; set; }
             [StringLength(50)] public string Remarks { get; set; }
             public int Id { get; set; }
-            public string LastCreatedFolderPath { get; set; }
         }
         // Methods
         private void ClearAll_Click(object sender, EventArgs e)
@@ -310,21 +309,7 @@ namespace ProjectCompiler
             EncoderBox.Text = encoder;
             IDBox.Text = id.ToString();
         }
-        public void SaveFolderPath(int id, string folderPath)
-        {
-            Form2 form2Instance = Application.OpenForms.OfType<Form2>().FirstOrDefault();
-            if (form2Instance != null)
-            {
-                foreach (DataGridViewRow row in form2Instance.DBViewer.Rows)
-                {
-                    if (Convert.ToInt32(row.Cells["Id"].Value) == id)
-                    {
-                        row.Cells["FolderPath"].Value = folderPath;
-                        break;
-                    }
-                }
-            }
-        }
+
         private void Upload_Click(object sender, EventArgs e)
         {
             // Get the path to the Documents folder under 'This PC'
@@ -342,8 +327,8 @@ namespace ProjectCompiler
             // Create the new folder
             Directory.CreateDirectory(newFolderPath);
 
-            // Store the folder path in Form2's DBViewer
-            SaveFolderPath(id, lastCreatedFolderPath);
+            // Store the path of the created folder
+            lastCreatedFolderPath = newFolderPath;
 
             // Open a dialog to select multiple image files
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -377,5 +362,5 @@ namespace ProjectCompiler
                 MessageBox.Show("No folder to open. Please upload images first.");
             }
         }
-    }    
+    }
 }
